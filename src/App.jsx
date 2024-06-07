@@ -14,24 +14,26 @@ import {
 } from "@mui/material";
 
 function App() {
-  const [access_token, set_access_token] = useState("");
-  const [userType, set_userType] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const [userType, setUserType] = useState("");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    //const token = Cookies.get("accesstoken");
     const token = localStorage.getItem("token");
+    const userType = localStorage.getItem("userType");
+    console.log(token);
+
     if (token && token !== "undefined") {
-      const userDetails = Cookies.get("user_details");
-      const userType = localStorage.getItem("userType");
+      setAccessToken(token);
       if (userType) {
-        set_userType(userType);
+        setUserType(userType);
+      } else {
+        setOpen(true);
       }
-      set_access_token(token);
-    } else if (token && token == "undefined") {
+    } else if (token !== null) {
+      // Check if token is not null (i.e., local storage is not empty)
       setOpen(true);
-      localStorage.clear();
     }
 
     setLoading(false);
@@ -39,7 +41,8 @@ function App() {
 
   const handleClose = () => {
     setOpen(false);
-    window.location.href = "/pms"; // Assuming there's a login route
+    localStorage.clear(); // Clear local storage to remove invalid tokens
+    window.location.href = "/pms"; // Redirect to login route
   };
 
   if (loading) {
@@ -53,7 +56,7 @@ function App() {
   return (
     <>
       <Router basename="/pms">
-        <AppRoutes access_token={access_token} userType={userType} />
+        <AppRoutes access_token={accessToken} userType={userType} />
       </Router>
       <Dialog
         open={open}

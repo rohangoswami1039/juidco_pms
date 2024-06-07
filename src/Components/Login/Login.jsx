@@ -8,6 +8,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { Container, Box, Button } from "@mui/material";
 import PasswordInput from "./PasswordInput"; // Import the PasswordInput component
+import createApiInstance from "../../AxiosInstance";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,8 @@ const Login = () => {
   const [deviceType, setDeviceType] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const Authapi = createApiInstance("auth");
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -33,7 +36,7 @@ const Login = () => {
   const handleLogin = async (values) => {
     try {
       setLoading(true);
-      const res = await axios({
+      /* const res = await axios({
         url: `${process.env.REACT_APP_AUTH_URL}/login`,
         method: "POST",
         data: {
@@ -42,6 +45,13 @@ const Login = () => {
           type: window.ReactNativeWebView ? "mobile" : null,
           //type: deviceType,
         },
+      }); */
+
+      const res = await Authapi.post("/login", {
+        email: values.user_id,
+        password: values.password,
+        type: window.ReactNativeWebView ? "mobile" : null,
+        //type: deviceType,
       });
 
       if (res) {
@@ -118,14 +128,14 @@ const Login = () => {
               </div>
               <div className="my-4">
                 <div className="flex flex-col items-center justify-center flex-wrap gap-x-2 gap-y-2 w-full poppins ">
-                  <span
+                  {/* <span
                     className="text-gray-700 text-sm font-semibold cursor-pointer w-full text-center"
                     onClick={() => {
                       // Handle forgot password
                     }}
                   >
                     Forgot Password
-                  </span>
+                  </span> */}
                 </div>
               </div>
               <Button

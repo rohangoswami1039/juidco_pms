@@ -5,9 +5,8 @@ import { Routes, Route, Outlet, Navigate } from "react-router-dom";
 
 import "react-datepicker/dist/react-datepicker.css";
 
-export default function Dashboard({children}) {
+export default function Dashboard({ children }) {
   const [hide, setHide] = useState(false);
-  
 
   return (
     <>

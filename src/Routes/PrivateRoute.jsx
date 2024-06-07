@@ -3,9 +3,11 @@ import { Navigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Header from "../Components/Header/Header";
 import Sidebar from "../Components/Dashboard/Sidebar";
+import { motion } from "framer-motion";
 
-const PrivateRoute = ({ element: Component }) => {
-  const token = Cookies.get("accesstoken");
+const PrivateRoute = ({ Element }) => {
+  //const token = Cookies.get("accesstoken");
+  const token = localStorage.getItem("token");
   const [hide, setHide] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -15,6 +17,11 @@ const PrivateRoute = ({ element: Component }) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const sidebarVariants = {
+    visible: { x: 0 },
+    hidden: { x: -400 },
+  };
 
   return token ? (
     <>
@@ -29,15 +36,48 @@ const PrivateRoute = ({ element: Component }) => {
           </div>
         </div>
       ) : (
-        <>
-          <Header hide={hide} set_hide={setHide} heading={"Urban Transport"} />
-          <div className="flex flex-1 flex-row h-[90vh] mt-2">
-            <div className={`${hide ? "hidden" : "flex"} w-3/12`}>
-              <Sidebar />
-            </div>
-            <Component />
+        <div className="flex flex-1 flex-col h-[100vh]">
+          <div className="flex  h-fit w-full">
+            <Header
+              hide={hide}
+              set_hide={setHide}
+              heading={"Parking Management System"}
+            />
           </div>
-        </>
+
+          <div className="flex flex-1 overflow-auto">
+            <div className="flex  w-fit ">
+              <div className="flex flex-1">
+                <motion.div
+                  className={`${
+                    hide ? "hidden" : "flex"
+                  }  transition-all duration-300 ease-in-out  w-full`}
+                  initial={{ x: -400 }} // Initial animation for hiding
+                  animate={hide ? "hidden" : "visible"} // Animation based on hide state
+                  variants={sidebarVariants} // Variants for animation
+                >
+                  <Sidebar />
+                </motion.div>
+              </div>
+            </div>
+            <div className="flex flex-1 ">
+              <Element />
+            </div>
+          </div>
+          {/* <div className="flex flex-1 flex-row  mt-2">
+            <motion.div
+              className={`${
+                hide ? "hidden" : "flex"
+              }  transition-all duration-300 ease-in-out  w-[20%]`}
+              initial={{ x: -400 }} // Initial animation for hiding
+              animate={hide ? "hidden" : "visible"} // Animation based on hide state
+              variants={sidebarVariants} // Variants for animation
+            >
+              <Sidebar />
+            </motion.div>
+           
+          </div> */}
+        </div>
       )}
     </>
   ) : (

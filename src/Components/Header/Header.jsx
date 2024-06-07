@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import bus from "../../assets/bus 1.png";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/slice/slice";
+import { motion } from "framer-motion";
 
 const Header = ({ heading, set_hide, hide }) => {
   const dispatch = useDispatch();
@@ -10,23 +11,24 @@ const Header = ({ heading, set_hide, hide }) => {
     const confirm = window.confirm("Are you sure want to logout?");
     if (confirm) {
       dispatch(logout());
-      window.location.replace("/ptms");
+      window.location.replace("/pms");
     }
   }
 
   return (
-    <div className="flex flex-col md:flex-row justify-between h-[350px] md:h-20 bg-white rounded-b-[30px] md:border-0 md:rounded-none border-b-[3px] mdborder-l-0 border-r-0 shadow-md border-t-0">
+    <div className="flex flex-1 flex-row justify-between px-4 h-[80px] bg-white rounded-b-[30px] md:border-0 md:rounded-none border-b-[3px] mdborder-l-0 border-r-0 shadow-md border-t-0">
       <div
         style={{ flex: 2 }}
         className="flex justify-center md:justify-start items-center"
       >
         <div className="flex flex-row justify-start items-center md:ml-10">
           <div className="flex text-xl text-[#555555] font-bold">UD & HD</div>
-          <div
+          <motion.div
             className="flex ml-2 cursor-pointer"
             onClick={() => {
               set_hide(!hide);
             }}
+            whileHover={{ rotate: 180 }}
           >
             <svg
               width="28"
@@ -40,7 +42,7 @@ const Header = ({ heading, set_hide, hide }) => {
                 fill="#555555"
               />
             </svg>
-          </div>
+          </motion.div>
         </div>
       </div>
       <div className="flex flex-1 justify-center md:justify-end items-center ">
