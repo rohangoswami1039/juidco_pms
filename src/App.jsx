@@ -42,7 +42,7 @@ function App() {
   const handleClose = () => {
     setOpen(false);
     localStorage.clear(); // Clear local storage to remove invalid tokens
-    window.location.href = "/pms"; // Redirect to login route
+    window.location.href = "/parking"; // Redirect to login route
   };
 
   if (loading) {
@@ -55,7 +55,7 @@ function App() {
 
   return (
     <>
-      <Router basename="/pms">
+      <Router basename="/parking">
         <AppRoutes access_token={accessToken} userType={userType} />
       </Router>
       <Dialog

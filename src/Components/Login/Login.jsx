@@ -70,9 +70,9 @@ const Login = () => {
         localStorage.setItem("userEmail", userDetails.email);
         localStorage.setItem("ulbIduserMobile", userDetails.mobile);
         if (userDetails.user_type === "Admin") {
-          window.location.replace("/pms/dashboard");
+          window.location.replace("/parking/dashboard");
         } else if (userDetails.user_type === "TC") {
-          window.location.replace("/pms/conductor_dashboard");
+          window.location.replace("/parking/conductor_dashboard");
         } else {
           window.location.replace("/");
         }

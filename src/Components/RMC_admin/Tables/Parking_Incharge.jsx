@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
+import createApiInstance from "../../../AxiosInstance";
+import axios from "axios";
 
 const sampleData = [
   {
@@ -23,47 +25,74 @@ const sampleData = [
     aadhar: "156528259215",
     status: "Present",
   },
-  {
-    id: 56152213,
-    Name: "Rohan Goswami",
-    email: "rohangoswami1039@gmail.com",
-    location: "12345",
-    aadhar: "156528259215",
-    status: "Present",
-  },
-  {
-    id: 561524533,
-    Name: "Rohan Goswami",
-    email: "rohangoswami1039@gmail.com",
-    location: "12345",
-    aadhar: "156528259215",
-    status: "Present",
-  },
-  {
-    id: 5615226,
-    Name: "Rohan Goswami",
-    email: "rohangoswami1039@gmail.com",
-    location: "12345",
-    aadhar: "156528259215",
-    status: "Present",
-  },
+
   // Add more data as needed
 ];
 
 export default function Parking_Incharge() {
-  const [page, setPage] = useState(0);
-  //const [rowsPerPage, setRowsPerPage] = useState(5);
-  //const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
+  const BaseApi = createApiInstance("Base");
+  const [incharges, set_incharges] = useState();
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [imageURls, set_imageURls] = useState({});
+  const token = localStorage.getItem("token");
+
+  const getImage = async (referenceNumber) => {
+    console.log(referenceNumber);
+    const response = await axios.post(
+      `https://jharkhandegovernance.com/dms/backend/document/view-by-reference`,
+      { referenceNo: referenceNumber },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          token: "8Ufn6Jio6Obv9V7VXeP7gbzHSyRJcKluQOGorAD58qA1IQKYE0",
+        },
+      }
+    );
+    console.log(response.data?.data?.fullPath);
+    const url = response.data?.data?.fullPath.toString();
+    return url;
+  };
+  console.log(imageURls);
+
+  useEffect(() => {
+    const response = BaseApi.get(
+      `/get-parking-incharge?limit=${rowsPerPage}&page=${page}`
+    )
+      .then((response) => {
+        if (response.data.status && response.data.data) {
+          // Map over the data to include image URLs
+          const promises = response.data.data.data.map(async (incharge) => {
+            if (incharge.kyc_doc && incharge.fitness_doc) {
+              const kycDocUrl = await getImage(incharge.kyc_doc);
+              const fitnessDocUrl = await getImage(incharge.fitness_doc);
+              return { ...incharge, kycDocUrl, fitnessDocUrl };
+            } else {
+              return incharge;
+            }
+          });
+
+          // Resolve all promises and update state with incharges data including image URLs
+          Promise.all(promises).then((inchargesWithImages) => {
+            set_incharges(inchargesWithImages);
+            setPage(response.data.data.page);
+            setTotalItems(response.data.data.totalItems);
+            setTotalPages(response.data.data.totalPages);
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [page, rowsPerPage]);
+  console.log(incharges);
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-
-  const paginatedData = sampleData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -71,7 +100,7 @@ export default function Parking_Incharge() {
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(1); // Reset page to 1 when changing rowsPerPage
   };
 
   return (
@@ -130,40 +159,48 @@ export default function Parking_Incharge() {
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Location</TableCell>
-                <TableCell>Aadhar</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Incharge Id</TableCell>
+                <TableCell>Fitness Doc</TableCell>
+                <TableCell>KYC Doc</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {sampleData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
+              {incharges &&
+                incharges.map((incharge) => (
+                  <TableRow key={incharge.id}>
                     <TableCell>
                       <div className="flex flex-row gap-2">
                         <div className="flex">
                           <Avatar />
                         </div>
                         <div className="flex flex-col">
-                          <div className="flex ">{row.Name}</div>
-                          <div className="flex">{row.email}</div>
+                          <div className="flex ">
+                            {incharge.first_name}{" "}
+                            {incharge.middle_name ? incharge.middle_name : ""}{" "}
+                            {incharge.last_name}
+                          </div>
+                          <div className="flex">{incharge.email_id}</div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{row.email}</TableCell>
-                    <TableCell>{row.location}</TableCell>
-                    <TableCell>{row.aadhar}</TableCell>
-                    <TableCell>{row.status}</TableCell>
+                    <TableCell>{incharge.email_id}</TableCell>
+                    <TableCell>{incharge.address}</TableCell>
+                    <TableCell>{incharge.cunique_id}</TableCell>
+                    <TableCell>
+                      <img className="w-20 h-20" src={incharge.fitnessDocUrl} />
+                    </TableCell>
+                    <TableCell>
+                      <img className="w-20 h-20" src={incharge.kycDocUrl} />
+                    </TableCell>
+
                     <TableCell>
                       <div>
                         <div className="flex flex-row gap-4">
-                          {/*Edit */}
+                          {/* Edit */}
                           <div className="flex ">
                             <svg
                               width="18"
@@ -189,7 +226,7 @@ export default function Parking_Incharge() {
                             </svg>
                           </div>
 
-                          {/*Delete */}
+                          {/* Delete */}
                           <div className="flex">
                             <svg
                               width="22"
@@ -231,9 +268,9 @@ export default function Parking_Incharge() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={sampleData.length}
+          count={totalItems}
           rowsPerPage={rowsPerPage}
-          page={page}
+          page={page - 1} // Subtract 1 from page because TablePagination counts pages starting from 0
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />

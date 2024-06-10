@@ -3,13 +3,17 @@ import { useNavigate } from "react-router-dom";
 import parkingStop from "../../../assets/parking-stop.png";
 import { Formik, Form, Field } from "formik";
 import Parking_schedule from "../Tables/Parking_schedule";
+import * as Yup from "yup";
+import Scheduling_form from "../Registration/Forms/Scheduling_form";
+import parking_lot from "../../../assets/icons/Parking/Images/parking-lot.png";
+
 export default function Parking_Scheduling() {
   const navigate = useNavigate();
   return (
     <div className="flex flex-1">
       <div className="flex flex-col flex-1 bg-[#F9FAFC]">
         <div className="flex h-10 justify-between items-center">
-          <div className="flex ml-4 ">
+          <div className="flex ml-4">
             <div
               onClick={() => {
                 navigate(-1);
@@ -40,21 +44,30 @@ export default function Parking_Scheduling() {
                   </clipPath>
                 </defs>
               </svg>
-              <div className="ml-2 mt-1 text-[#665DD9]  text-sm text-center">
+              <div className="ml-2 mt-1 text-[#665DD9] text-sm text-center">
                 {" "}
                 Back
               </div>
             </div>
           </div>
-          <div className="flex text-xl font-semibold  mr-4">
+          <div className="flex text-xl font-semibold mr-4">
             Parking Scheduling
           </div>
         </div>
+
         <div className="flex flex-1 flex-col border-2 shadow-md rounded-md bg-white m-4">
-          <div className="flex flex-1 justify-center items-center">
-            <div className="flex flex-col mt-5 w-full h-fit justify-center ">
-                          {/**Formik form  */}
-                          
+          <div className="flex h-fit justify-between items-start">
+            <div className="flex flex-row ml-10 mt-6">
+              <img src={parking_lot} className="w-10" />
+              <div className="flex text-xl font-semibold justify-center items-center ml-4">
+                Add new Parking Schedule
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-1 max-h-[500px] overflow-y-auto">
+            {/**Formik form  */}
+            <div className="flex flex-1 m-4">
+              <Scheduling_form />
             </div>
           </div>
         </div>

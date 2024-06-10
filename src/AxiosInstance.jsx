@@ -15,6 +15,7 @@ const createApiInstance = (type) => {
     baseURL: baseUrl,
     headers: {
       Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "multipart/form-data",
     },
   });
 
