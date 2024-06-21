@@ -90,6 +90,8 @@ export default function Incharge_form() {
   });
   const [loading, set_loading] = React.useState(false);
 
+  const ulb_id = localStorage.getItem("ulbId");
+
   //API Backend Registration Section
   const BaseApi = createApiInstance("Base");
   const [inChargeData, Set_inChargeData] = useState();
@@ -117,6 +119,7 @@ export default function Incharge_form() {
       formData.append("emergency_mob_no", values.Emergency_Contact_Number);
       formData.append("email_id", values.EmailId);
       formData.append("address", "Ranchi Jharkhand");
+      formData.append("ulb_id", ulb_id);
 
       formData.append("zip_code", values.Zip_code);
       formData.append("address", values.address);

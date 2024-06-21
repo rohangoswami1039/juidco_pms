@@ -54,6 +54,8 @@ const Login = () => {
         //type: deviceType,
       });
 
+      console.log(res);
+
       if (res) {
         const { token, userDetails } = res.data.data;
         Cookies.set("accesstoken", token, { expires: 1 });
@@ -65,14 +67,16 @@ const Login = () => {
         localStorage.setItem("device", deviceType);
         // localStorage.setItem("ulbId", userDetails.ulb_id);
         localStorage.setItem("userUlbName", userDetails.ulbName);
-        localStorage.setItem("roles", userDetails.role[0]);
+        localStorage.setItem("roles", userDetails.role);
         localStorage.setItem("isLoggedIn", true);
         localStorage.setItem("userEmail", userDetails.email);
         localStorage.setItem("ulbIduserMobile", userDetails.mobile);
+
         if (userDetails.user_type === "Admin") {
           window.location.replace("/parking/dashboard");
-        } else if (userDetails.user_type === "TC") {
-          window.location.replace("/parking/conductor_dashboard");
+        } else if (userDetails.user_type === "Employee") {
+          localStorage.setItem("InchargeId", userDetails.emp_id);
+          window.location.replace("/parking/In_Charge");
         } else {
           window.location.replace("/");
         }

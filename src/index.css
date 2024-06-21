@@ -6,7 +6,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
 }
 
 ::-webkit-scrollbar {
@@ -28,4 +27,8 @@
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #a9a6a6;
+}
+
+.apexcharts-menu-icon {
+  display: none;
 }

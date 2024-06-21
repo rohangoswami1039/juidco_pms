@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,87 +12,150 @@ import {
   TablePagination,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
-const sampleData = [
-  {
-    id: 5615226,
-    Address: "D.A.V kapil dev road to Sharjanan Chowk",
-    PostCode: "005694",
-    Incharge_Name: "Sumit Lakra",
-    Incharge_Id: "#0036549",
-    Date: "12July2024",
-    From: "10:05 A.M",
-    To: "10:05 P.M",
-    Schedule_type: "Organized",
-  },
-  {
-    id: 56152268,
-    Address: "D.A.V kapil dev road to Sharjanan Chowk",
-    PostCode: "005694",
-    Incharge_Name: "Sumit Lakra",
-    Incharge_Id: "#0036549",
-    Date: "12July2024",
-    From: "10:05 A.M",
-    To: "10:05 P.M",
-    Schedule_type: "Organized",
-  },
-  {
-    id: 56152269,
-    Address: "D.A.V kapil dev road to Sharjanan Chowk",
-    PostCode: "005694",
-    Incharge_Name: "Sumit Lakra",
-    Incharge_Id: "#0036549",
-    Date: "12July2024",
-    From: "10:05 A.M",
-    To: "10:05 P.M",
-    Schedule_type: "Event",
-  },
-  {
-    id: 56152265,
-    Address: "D.A.V kapil dev road to Sharjanan Chowk",
-    PostCode: "005694",
-    Incharge_Name: "Sumit Lakra",
-    Incharge_Id: "#0036549",
-    Date: "12July2024",
-    From: "10:05 A.M",
-    To: "10:05 P.M",
-    Schedule_type: "Event",
-  },
-  {
-    id: 56152262,
-    Address: "D.A.V kapil dev road to Sharjanan Chowk",
-    PostCode: "005694",
-    Incharge_Name: "Sumit Lakra",
-    Incharge_Id: "#0036549",
-    Date: "12July2024",
-    From: "10:05 A.M",
-    To: "10:05 P.M",
-    Schedule_type: "Organized",
-  },
-  // Add more data as needed
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+
+const thead = [
+  { name: "Address" },
+  { name: "Post Code" },
+  { name: "Incharge Name" },
+  { name: "Incharge ID" },
+  { name: "Date" },
+  { name: "From" },
+  { name: "To" },
+  /*   { name: "Schedule Type" },
+   */ { name: "Actions" },
 ];
 
-export default function Parking_schedule() {
+export default function ParkingSchedule() {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [data, setData] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const [erroropen, set_erroropen] = useState(false);
+
+  const [delete_id, set_delete_id] = useState("");
+  const token = localStorage.getItem("token");
+  const [deleteLoading, set_deleteLoading] = useState(false);
+
+  const errorhandleClickOpen = (id) => {
+    set_delete_id(id);
+    set_erroropen(true);
+  };
+
+  const errorhandleClose = () => {
+    set_erroropen(false);
+  };
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  const paginatedData = sampleData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  const formatDate = (isoDateString) => {
+    const date = new Date(isoDateString);
+
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    }).format(date);
+  };
+  function formatTime(timeStr) {
+    if (timeStr.length === 4) {
+      const hours = timeStr.substring(0, 2);
+      const minutes = timeStr.substring(2, 4);
+      //const seconds = timeStr.substring(4, 6);
+      return `${hours}:${minutes}`;
+    }
+    return timeStr; // Return the original string if it doesn't match the expected length
+  }
+  const dataFetch = async (newPage, newRowsPerPage) => {
+    try {
+      const response = await axios.get(
+        `${
+          process.env.REACT_APP_BASE_URL
+        }/get-schedule?limit=${newRowsPerPage}&page=${newPage + 1}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Debug: Log the API response
+      console.log("API response:", response);
+      setTotalItems(response.data?.data?.totalItems);
+
+      if (Array.isArray(response.data.data.data)) {
+        setData(response.data.data.data); // Ensure the response contains a 'data' field with an array of items
+      } else {
+        console.error(
+          "API response data is not an array",
+          response.data.data.data
+        );
+        setData([]); // Default to an empty array if the data is not an array
+      }
+
+      setTotalItems(response.data?.data?.totalItems); // Ensure the response contains a 'totalItems' field with the total count
+    } catch (error) {
+      console.error("There was an error fetching the schedule!", error);
+    }
+  };
+
+  useEffect(() => {
+    dataFetch(page, rowsPerPage);
+  }, [page, rowsPerPage]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+    dataFetch(newPage, rowsPerPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset page to 0 when changing rowsPerPage
+    dataFetch(0, newRowsPerPage);
   };
+
+  const deletehandle = () => {
+    set_deleteLoading(true);
+    const response = axios
+      .post(
+        `${process.env.REACT_APP_BASE_URL}/delete-schedule`,
+        {
+          id: delete_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((e) => {
+        console.log(e.data?.data?.deleted);
+        if (e.data?.data?.deleted == delete_id) {
+          set_deleteLoading(false);
+          dataFetch(page, rowsPerPage);
+          errorhandleClose();
+        } else {
+          toast.error("Something went wrong");
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+  };
+
   return (
     <div className="flex flex-1 flex-col">
       <div style={{ flex: 2 }} className="flex justify-center items-center">
@@ -149,118 +212,102 @@ export default function Parking_schedule() {
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
-                <TableCell>Address</TableCell>
-                <TableCell>Post Code</TableCell>
-                <TableCell>Incharge Name</TableCell>
-                <TableCell>Incharge ID</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>From</TableCell>
-                <TableCell>To</TableCell>
-                <TableCell>Schedule Type</TableCell>
-                <TableCell>Actions</TableCell>
+                {thead.map((item, index) => (
+                  <TableCell key={index}>{item.name}</TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {sampleData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.Address}</TableCell>
-                    <TableCell>{row.PostCode}</TableCell>
-                    <TableCell>{row.Incharge_Name}</TableCell>
-                    <TableCell>{row.Incharge_Id}</TableCell>
-                    <TableCell>{row.Date}</TableCell>
-                    <TableCell>{row.From}</TableCell>
-                    <TableCell>{row.To}</TableCell>
-                    <TableCell>
-                      <div
-                        className={`flex p-2 ${
-                          row.Schedule_type === "Organized"
-                            ? "bg-[#3DFF96] text-[#06711E]"
-                            : "bg-[#FAF691] text-[#989200]"
-                        } rounded-md shadow-md justify-center items-center`}
-                      >
-                        <div className="flex">{row.Schedule_type}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="flex flex-row gap-4">
-                          {/*Edit */}
-                          <div className="flex ">
-                            <svg
-                              width="18"
-                              height="18"
-                              viewBox="0 0 18 18"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M3.82353 4.76489H2.88235C2.38312 4.76489 1.90434 4.96321 1.55133 5.31622C1.19832 5.66923 1 6.14801 1 6.64725V15.1178C1 15.6171 1.19832 16.0959 1.55133 16.4489C1.90434 16.8019 2.38312 17.0002 2.88235 17.0002H11.3529C11.8522 17.0002 12.331 16.8019 12.684 16.4489C13.037 16.0959 13.2353 15.6171 13.2353 15.1178V14.1767"
-                                stroke="#333333"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              />
-                              <path
-                                d="M12.2941 2.88245L15.1176 5.70598M16.4212 4.37422C16.7918 4.00354 17.0001 3.50079 17.0001 2.97657C17.0001 2.45235 16.7918 1.9496 16.4212 1.57892C16.0505 1.20825 15.5477 1 15.0235 1C14.4993 1 13.9966 1.20825 13.6259 1.57892L5.70587 9.47069V12.2942H8.5294L16.4212 4.37422Z"
-                                stroke="#333333"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              />
-                            </svg>
-                          </div>
-
-                          {/*Delete */}
-                          <div className="flex">
-                            <svg
-                              width="22"
-                              height="22"
-                              viewBox="0 0 22 22"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M8.95455 4H13.0455C13.0455 3.50272 12.83 3.02581 12.4464 2.67417C12.0628 2.32254 11.5425 2.125 11 2.125C10.4575 2.125 9.93724 2.32254 9.55365 2.67417C9.17005 3.02581 8.95455 3.50272 8.95455 4ZM7.72727 4C7.72727 3.20435 8.07208 2.44129 8.68583 1.87868C9.29959 1.31607 10.132 1 11 1C11.868 1 12.7004 1.31607 13.3142 1.87868C13.9279 2.44129 14.2727 3.20435 14.2727 4H19.3864C19.5491 4 19.7052 4.05926 19.8203 4.16475C19.9354 4.27024 20 4.41332 20 4.5625C20 4.71168 19.9354 4.85476 19.8203 4.96025C19.7052 5.06574 19.5491 5.125 19.3864 5.125H18.3145L17.3188 16.0773C17.2464 16.874 16.8499 17.6167 16.2081 18.1581C15.5663 18.6994 14.726 18.9999 13.8538 19H8.14618C7.27399 18.9999 6.43368 18.6994 5.79187 18.1581C5.15006 17.6167 4.75362 16.874 4.68118 16.0773L3.68545 5.125H2.61364C2.45089 5.125 2.29481 5.06574 2.17973 4.96025C2.06465 4.85476 2 4.71168 2 4.5625C2 4.41332 2.06465 4.27024 2.17973 4.16475C2.29481 4.05926 2.45089 4 2.61364 4H7.72727ZM5.90436 15.9835C5.95115 16.4991 6.2076 16.9797 6.62285 17.33C7.03809 17.6804 7.58181 17.8749 8.14618 17.875H13.8538C14.4182 17.8749 14.9619 17.6804 15.3772 17.33C15.7924 16.9797 16.0488 16.4991 16.0956 15.9835L17.084 5.125H4.91682L5.90436 15.9835ZM9.15909 7.75C9.32184 7.75 9.47792 7.80926 9.593 7.91475C9.70808 8.02024 9.77273 8.16332 9.77273 8.3125V14.6875C9.77273 14.8367 9.70808 14.9798 9.593 15.0852C9.47792 15.1907 9.32184 15.25 9.15909 15.25C8.99634 15.25 8.84026 15.1907 8.72518 15.0852C8.61011 14.9798 8.54545 14.8367 8.54545 14.6875V8.3125C8.54545 8.16332 8.61011 8.02024 8.72518 7.91475C8.84026 7.80926 8.99634 7.75 9.15909 7.75ZM13.4545 8.3125C13.4545 8.16332 13.3899 8.02024 13.2748 7.91475C13.1597 7.80926 13.0037 7.75 12.8409 7.75C12.6782 7.75 12.5221 7.80926 12.407 7.91475C12.2919 8.02024 12.2273 8.16332 12.2273 8.3125V14.6875C12.2273 14.8367 12.2919 14.9798 12.407 15.0852C12.5221 15.1907 12.6782 15.25 12.8409 15.25C13.0037 15.25 13.1597 15.1907 13.2748 15.0852C13.3899 14.9798 13.4545 14.8367 13.4545 14.6875V8.3125Z"
-                                fill="#333333"
-                              />
-                            </svg>
-                          </div>
-
-                          {/* More */}
-                          <div className="flex">
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M13.5 10.375C13.7967 10.375 14.0867 10.463 14.3334 10.6278C14.58 10.7926 14.7723 11.0269 14.8858 11.301C14.9994 11.5751 15.0291 11.8767 14.9712 12.1676C14.9133 12.4586 14.7704 12.7259 14.5607 12.9357C14.3509 13.1454 14.0836 13.2883 13.7926 13.3462C13.5017 13.4041 13.2001 13.3744 12.926 13.2608C12.6519 13.1473 12.4176 12.955 12.2528 12.7084C12.088 12.4617 12 12.1717 12 11.875C12 11.4772 12.158 11.0956 12.4393 10.8143C12.7206 10.533 13.1022 10.375 13.5 10.375ZM12 18.25C12 18.5467 12.088 18.8367 12.2528 19.0834C12.4176 19.33 12.6519 19.5223 12.926 19.6358C13.2001 19.7494 13.5017 19.7791 13.7926 19.7212C14.0836 19.6633 14.3509 19.5204 14.5607 19.3107C14.7704 19.1009 14.9133 18.8336 14.9712 18.5426C15.0291 18.2517 14.9994 17.9501 14.8858 17.676C14.7723 17.4019 14.58 17.1676 14.3334 17.0028C14.0867 16.838 13.7967 16.75 13.5 16.75C13.1022 16.75 12.7206 16.908 12.4393 17.1893C12.158 17.4706 12 17.8522 12 18.25ZM12 5.5C12 5.79667 12.088 6.08668 12.2528 6.33335C12.4176 6.58003 12.6519 6.77229 12.926 6.88582C13.2001 6.99935 13.5017 7.02905 13.7926 6.97118C14.0836 6.9133 14.3509 6.77044 14.5607 6.56066C14.7704 6.35088 14.9133 6.08361 14.9712 5.79263C15.0291 5.50166 14.9994 5.20006 14.8858 4.92597C14.7723 4.65188 14.58 4.41762 14.3334 4.25279C14.0867 4.08797 13.7967 4 13.5 4C13.1022 4 12.7206 4.15803 12.4393 4.43934C12.158 4.72064 12 5.10217 12 5.5Z"
-                                fill="#333333"
-                              />
-                            </svg>
-                          </div>
+              {data.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.address}</TableCell>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.first_name}</TableCell>
+                  <TableCell>{row.incharge_id}</TableCell>
+                  <TableCell>{formatDate(row.from_date)}</TableCell>
+                  <TableCell>{formatTime(row.from_time)}</TableCell>
+                  <TableCell>{row.to_time}</TableCell>
+                  {/* <TableCell>
+                    <div
+                      className={`flex p-2 
+                             bg-[#FAF691] text-[#989200]
+                         rounded-md shadow-md justify-center items-center`}
+                    >
+                      Organised
+                    </div>
+                  </TableCell> */}
+                  <TableCell>
+                    <div>
+                      <div className="flex flex-row gap-4">
+                        {/*Delete */}
+                        <div
+                          onClick={() => {
+                            errorhandleClickOpen(row.id);
+                          }}
+                          className="flex cursor-pointer"
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M6.95455 3H11.0455C11.0455 2.50272 10.83 2.02581 10.4464 1.67417C10.0628 1.32254 9.54249 1.125 9 1.125C8.45751 1.125 7.93724 1.32254 7.55365 1.67417C7.17005 2.02581 6.95455 2.50272 6.95455 3ZM5.72727 3C5.72727 2.20435 6.07208 1.44129 6.68583 0.87868C7.29959 0.316071 8.13202 0 9 0C9.86798 0 10.7004 0.316071 11.3142 0.87868C11.9279 1.44129 12.2727 2.20435 12.2727 3H17.3864C17.5491 3 17.7052 3.05926 17.8203 3.16475C17.9354 3.27024 18 3.41332 18 3.5625C18 3.71168 17.9354 3.85476 17.8203 3.96025C17.7052 4.06574 17.5491 4.125 17.3864 4.125H16.3145L15.3188 15.0773C15.2464 15.874 14.8499 16.6167 14.2081 17.1581C13.5663 17.6994 12.726 17.9999 11.8538 18H6.14618C5.27399 17.9999 4.43368 17.6994 3.79187 17.1581C3.15006 16.6167 2.75362 15.874 2.68118 15.0773L1.68545 4.125H0.613636C0.45089 4.125 0.294809 4.06574 0.17973 3.96025C0.0646507 3.85476 0 3.71168 0 3.5625C0 3.41332 0.0646507 3.27024 0.17973 3.16475C0.294809 3.05926 0.45089 3 0.613636 3H5.72727ZM3.90436 14.9835C3.95115 15.4991 4.2076 15.9797 4.62285 16.33C5.03809 16.6804 5.58181 16.8749 6.14618 16.875H11.8538C12.4182 16.8749 12.9619 16.6804 13.3772 16.33C13.7924 15.9797 14.0488 15.4991 14.0956 14.9835L15.084 4.125H2.91682L3.90436 14.9835ZM7.15909 6.75C7.32184 6.75 7.47792 6.80926 7.593 6.91475C7.70808 7.02024 7.77273 7.16332 7.77273 7.3125V13.6875C7.77273 13.8367 7.70808 13.9798 7.593 14.0852C7.47792 14.1907 7.32184 14.25 7.15909 14.25C6.99634 14.25 6.84026 14.1907 6.72518 14.0852C6.61011 13.9798 6.54545 13.8367 6.54545 13.6875V7.3125C6.54545 7.16332 6.61011 7.02024 6.72518 6.91475C6.84026 6.80926 6.99634 6.75 7.15909 6.75ZM11.4545 7.3125C11.4545 7.16332 11.3899 7.02024 11.2748 6.91475C11.1597 6.80926 11.0037 6.75 10.8409 6.75C10.6782 6.75 10.5221 6.80926 10.407 6.91475C10.2919 7.02024 10.2273 7.16332 10.2273 7.3125V13.6875C10.2273 13.8367 10.2919 13.9798 10.407 14.0852C10.5221 14.1907 10.6782 14.25 10.8409 14.25C11.0037 14.25 11.1597 14.1907 11.2748 14.0852C11.3899 13.9798 11.4545 13.8367 11.4545 13.6875V7.3125Z"
+                              fill="#333333"
+                            />
+                          </svg>
                         </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={sampleData.length}
-          rowsPerPage={rowsPerPage}
+          count={totalItems}
           page={page}
           onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+
+      <Dialog
+        open={erroropen}
+        onClose={errorhandleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle
+          className="bg-red-100 text-red-600 font-bold"
+          id="alert-dialog-title"
+        >
+          {"Delete Schedule ? "}
+        </DialogTitle>
+        <DialogContent className="bg-red-100">
+          <DialogContentText id="alert-dialog-description">
+            Do You Want to Delete the Schedule
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="bg-red-100">
+          <Button onClick={deletehandle} variant="contained" color="error">
+            {deleteLoading ? "loading..." : "Confirm"}
+          </Button>
+
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={errorhandleClose}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

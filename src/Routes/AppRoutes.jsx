@@ -12,6 +12,10 @@ import ParkingArea_onboarding from "../Components/RMC_admin/Registration/Parking
 import ParkingSchedule from "../Components/RMC_admin/ParkingSchedule";
 import ParkingIncharge_onboarding from "../Components/RMC_admin/Registration/ParkingIncharge_onboarding";
 import Parking_Scheduling from "../Components/RMC_admin/Schedule/Parking_Scheduling";
+import Incharge_Dashboard from "../Components/Ticket_checker/Incharge_Dashboard";
+import Ticket_check from "../Components/Ticket_checker/Ticket_check";
+import Report_generation_checker from "../Components/Ticket_checker/Report/Report_generation_checker";
+import Report_page from "../Components/Ticket_checker/Report/Report_page";
 
 const AppRoutes = ({ access_token, userType }) => {
   console.log("AppRoutes with token >>> ", access_token, userType);
@@ -55,11 +59,23 @@ const AppRoutes = ({ access_token, userType }) => {
           />
         </>
       )}
-      {access_token && userType === "TC" && (
+      {access_token && userType === "Employee" && (
         <>
           <Route
-            path="/conductor_dashboard"
-            element={<ProtectedApproute element={<div>Conductor Home</div>} />}
+            path="/In_Charge"
+            element={<ProtectedApproute element={Incharge_Dashboard} />}
+          />
+          <Route
+            path="/ticket_check"
+            element={<ProtectedApproute element={Ticket_check} />}
+          />
+          <Route
+            path="/checker_report"
+            element={<ProtectedApproute element={Report_generation_checker} />}
+          />
+          <Route
+            path="/Incharge_Report"
+            element={<ProtectedApproute element={Report_page} />}
           />
         </>
       )}

@@ -1,19 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import parkingStop from "../../assets/parking-stop.png";
 import { Formik, Form, Field } from "formik";
 import Parking_Incharge from "./Tables/Parking_Incharge";
-
-
+import axios from "axios";
 
 export default function ParkingIncharge() {
   const navigate = useNavigate();
+  const [location, setLocation] = useState();
+  const [locationId, setLocationID] = useState();
 
+  const token = localStorage.getItem("token");
+  const fetchLocation = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/get-all-parking-area`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLocation(response.data.data);
+    } catch (error) {
+      console.error("There was an error onboarding the parking area!", error);
+    }
+  };
+  useEffect(() => {
+    fetchLocation();
+  }, []);
   return (
     <>
       <div className="flex flex-1 ">
         <div className="flex flex-col flex-1 bg-[#F9FAFC]">
-          <div className="flex h-10 justify-between items-center">
+          <div className="flex h-10 justify-between items-center mt-5 p-4">
             <div className="flex ml-4 ">
               <div
                 onClick={() => {
@@ -56,7 +76,7 @@ export default function ParkingIncharge() {
             </div>
           </div>
 
-          <div className="flex h-[100px] bg-white border-2 shadow-md mt-4 ml-4 mr-4 mb-2">
+          {/* <div className="flex h-[100px] bg-white border-2 shadow-md mt-4 ml-4 mr-4 mb-2">
             <div className="flex flex-row flex-1 m-1">
               <div className="flex  justify-center items-center">
                 <img className="h-[60px] w-[60px]" src={parkingStop} />
@@ -79,12 +99,16 @@ export default function ParkingIncharge() {
                             <Field
                               as="select"
                               name="location"
-                              className="w-full border-2 rounded p-2"
+                              className=" border-2 rounded p-2 "
+                              value={locationId}
+                              onChange={(e) => setLocationID(e.target.value)}
                             >
-                              <option value="">Select Location</option>
-                              <option value="location1">Location 1</option>
-                              <option value="location2">Location 2</option>
-                              <option value="location3">Location 3</option>
+                              <option value={null}>Select Location</option>
+                              {location?.data?.map((loc) => (
+                                <option value={loc?.id}>
+                                  {loc?.address} - {loc?.station}
+                                </option>
+                              ))}
                             </Field>
                           </div>
                           <div className="flex flex-1 mr-2">
@@ -118,12 +142,11 @@ export default function ParkingIncharge() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex flex-1 flex-col border-2 shadow-md rounded-md bg-white m-4">
-            <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col mt-5 w-full h-fit justify-center ">
-                {/**Formik form  */}
+            <div className="flex flex-1 justify-start items-start m-4">
+              <div className="flex flex-col mt-5 w-full h-fit ">
                 <Parking_Incharge />
               </div>
             </div>

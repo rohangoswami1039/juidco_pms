@@ -11,7 +11,7 @@ const Header = ({ heading, set_hide, hide }) => {
     const confirm = window.confirm("Are you sure want to logout?");
     if (confirm) {
       dispatch(logout());
-      window.location.replace("/pms");
+      window.location.replace("/parking");
     }
   }
 

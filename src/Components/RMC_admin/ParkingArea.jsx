@@ -1,11 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import parkingStop from "../../assets/parking-stop.png";
 import { Formik, Form, Field } from "formik";
 import Parking_area from "./Tables/Parking_area";
+import axios from "axios";
 
 export default function ParkingArea() {
   const navigate = useNavigate();
+  const [location, setLocation] = useState();
+  const [locationId, setLocationID] = useState();
+  const token = localStorage.getItem("token");
+
+  const fetchLocation = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/get-all-parking-area`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLocation(response.data.data);
+    } catch (error) {
+      console.error("There was an error onboarding the parking area!", error);
+    }
+  };
+  useEffect(() => {
+    fetchLocation();
+  }, []);
+
   return (
     <>
       <div className="flex flex-1 ">
@@ -51,7 +75,7 @@ export default function ParkingArea() {
             <div className="flex text-xl font-semibold  mr-4">Parking Area</div>
           </div>
 
-          <div className="flex h-[100px] p-4 bg-white border-2 shadow-md mt-4 ml-4 mr-4 mb-2">
+          {/* <div className="flex h-[100px] p-4 bg-white border-2 shadow-md mt-4 ml-4 mr-4 mb-2">
             <div className="flex flex-row flex-1 m-1">
               <div className="flex  justify-center items-center">
                 <img className="h-[60px] w-[60px]" src={parkingStop} />
@@ -74,31 +98,20 @@ export default function ParkingArea() {
                             <Field
                               as="select"
                               name="location"
-                              className="w-full border-2 rounded p-2"
+                              className=" border-2 rounded p-2 "
+                              value={locationId}
+                              onChange={(e) => setLocationID(e.target.value)}
                             >
-                              <option value="">Select Location</option>
-                              <option value="location1">Location 1</option>
-                              <option value="location2">Location 2</option>
-                              <option value="location3">Location 3</option>
+                              <option value={null}>Select Location</option>
+                              {location?.data?.map((loc) => (
+                                <option value={loc?.id}>
+                                  {loc?.address} - {loc?.station}
+                                </option>
+                              ))}
                             </Field>
                           </div>
-                          <div className="flex flex-1 mr-2">
-                            <Field
-                              type="text"
-                              name="inChargeId"
-                              placeholder="In-Charge ID"
-                              className="w-full border-2 rounded p-2"
-                            />
-                          </div>
-                          <div className="flex flex-1 mr-2">
-                            <Field
-                              type="text"
-                              name="name"
-                              placeholder="Name"
-                              className="w-full border-2 rounded p-2"
-                            />
-                          </div>
-                          <div className="flex flex-1">
+
+                          <div className="flex ">
                             <button
                               type="submit"
                               className="w-full bg-[#6366F1] shadow-md border-2  text-white p-2 rounded-md"
@@ -113,11 +126,11 @@ export default function ParkingArea() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex flex-1 flex-col border-2 shadow-md rounded-md bg-white m-4">
             <div className="flex flex-col mt-5 w-full h-fit ">
-              <Parking_area />
+              <Parking_area location={locationId} />
             </div>
           </div>
         </div>
