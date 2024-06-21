@@ -163,7 +163,7 @@ export default function Incharge_form() {
   const getImage = async (referenceNumber) => {
     console.log(referenceNumber);
     const response = await axios.post(
-      `https://jharkhandegovernance.com/dms/backend/document/view-by-reference`,
+      `${process.env.REACT_APP_DMS}`,
       { referenceNo: referenceNumber },
       {
         headers: {
@@ -173,7 +173,7 @@ export default function Incharge_form() {
       }
     );
     console.log(response.data?.data?.fullPath);
-    const url = response.data?.data?.fullPath.toString();
+    const url = response.data?.data?.fullPath?.toString();
     return url;
   };
 

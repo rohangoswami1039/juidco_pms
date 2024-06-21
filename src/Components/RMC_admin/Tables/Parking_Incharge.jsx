@@ -46,7 +46,7 @@ export default function Parking_Incharge() {
 
   const getImage = async (referenceNumber) => {
     const response = await axios.post(
-      `https://jharkhandegovernance.com/dms/backend/document/view-by-reference`,
+      `${process.env.REACT_APP_DMS}`,
       { referenceNo: referenceNumber },
       {
         headers: {
