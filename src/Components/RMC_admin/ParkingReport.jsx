@@ -64,6 +64,11 @@ export default function ParkingReport() {
     fetchLocation();
   }, []);
 
+  const totalVechicle =
+    data?.two_wheeler[0]?.count + data?.four_wheeler[0]?.count || 0;
+  const totalVechiclePrice =
+    data?.two_wheeler[0]?.sum + data?.four_wheeler[0]?.sum || 0;
+
   return (
     <>
       <div className="flex flex-1 overflow-scroll ">
@@ -161,32 +166,35 @@ export default function ParkingReport() {
 
           <div className="flex flex-col overflow-y-scroll">
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 shadow-xl rounded-md  bg-white m-2">
+              <div className="flex flex-col h-[350px] w-[600px] justify-start items-center border-2 shadow-xl rounded-md  bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between p-5">
                   <div>
                     <h5 className="p-1">
-                      Parking Type -{" "}
+                      <span className="font-bold">Parking Type: </span>
                       {data?.location_info[0]?.type_parking_space}
                     </h5>
                     <h5 className="p-1">
-                      Parking Name - {data?.location_info[0]?.address},{" "}
+                      <span className="font-bold"> Parking Name: </span>{" "}
+                      {data?.location_info[0]?.address},{" "}
                       {data?.location_info[0]?.station}{" "}
                     </h5>
                     <h5 className="p-1">
-                      Land Mark - {data?.location_info[0]?.landmark}{" "}
+                      <span className="font-bold">Land Mark: </span>{" "}
+                      {data?.location_info[0]?.landmark}{" "}
                     </h5>
                     <h5 className="p-1">
-                      Pin Code - {data?.location_info[0]?.zip_code}{" "}
+                      <span className="font-bold"> Pin Code: </span>{" "}
+                      {data?.location_info[0]?.zip_code}{" "}
                     </h5>
                     <h5 className="p-1">
-                      Parking Capacity -{" "}
+                      <span className="font-bold">Parking Capacity: </span>
                       {data?.location_info[0]?.two_wheeler_capacity +
                         data?.location_info[0]?.four_wheeler_capacity || 0}
                     </h5>
                     <h5 className="p-1">
-                      In-charge Name -
-                      <div className="flex grid-cols-3 gap-2 mt-2">
-                        <div className="flex flex-col shadow-lg p-4 justify-between items-center">
+                      <span className="font-bold">In-charge Name :</span>
+                      <div className="flex grid-cols-3 gap-2 mt-2 ">
+                        <div className="flex flex-col shadow-lg p-4 justify-between items-center border-2">
                           <img
                             className="h-[20px] w-[20px]"
                             src={parkingStop}
@@ -205,7 +213,7 @@ export default function ParkingReport() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col h-[400px] w-[600px]  justify-start items-center border-2 shadow-md rounded-md bg-white m-2">
+              <div className="flex flex-col h-[350px] w-[600px]  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -254,14 +262,14 @@ export default function ParkingReport() {
                   <div className="flex text-center grid-cols-2 gap-3 justify-center">
                     <div className="border-r-2	">
                       <p className="text-4xl font-bold text-green-500">
-                        {data?.all[0]?.count || 0}
+                        {totalVechicle}
                       </p>
                       <p className="w-40">Total No. of Vehicle Count</p>
                     </div>
 
                     <div>
                       <p className="text-4xl font-bold text-green-500">
-                        {data?.all[0]?.sum || 0} /-
+                        {totalVechiclePrice} /-
                       </p>
                       <p className="w-40">Total Amount of Vehicle Collection</p>
                     </div>
@@ -271,7 +279,7 @@ export default function ParkingReport() {
             </div>
 
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col h-[400px] w-[600px]  justify-start items-center border-2 shadow-md rounded-md bg-white m-2 relative">
+              <div className="flex flex-col h-[200px] w-[600px]  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -309,11 +317,11 @@ export default function ParkingReport() {
                   </div>
                 </div>
                 <div className="absolute bottom-0 right-0 p-2">
-                  <img className="h-[150px] w-[150px]" src={icon} alt="img" />
+                  <img className="h-[100px] w-[100px]" src={icon} alt="img" />
                 </div>
               </div>
 
-              <div className="flex flex-col h-[200px] w-[600px]  justify-start items-center border-2 shadow-md rounded-md bg-white m-2 relative">
+              <div className="flex flex-col h-[200px] w-[600px]  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -351,7 +359,7 @@ export default function ParkingReport() {
                   </div>
                 </div>
                 <div className="absolute bottom-0 right-0 p-2">
-                  <img className="h-[150px] w-[150px]" src={car} alt="img" />
+                  <img className="h-[100px] w-[100px]" src={car} alt="img" />
                 </div>
               </div>
             </div>
