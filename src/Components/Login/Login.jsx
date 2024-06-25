@@ -51,7 +51,7 @@ const Login = () => {
         email: values.user_id,
         password: values.password,
         type: window.ReactNativeWebView ? "mobile" : null,
-        //type: deviceType,
+        //type: "mobile",
       });
 
       console.log(res);

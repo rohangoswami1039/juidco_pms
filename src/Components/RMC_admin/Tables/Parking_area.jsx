@@ -21,21 +21,54 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import toast, { Toaster } from "react-hot-toast";
+import createApiInstance from "../../../AxiosInstance";
 
+import autoTable from "jspdf-autotable";
+import { jsPDF } from "jspdf";
 
+const handleDownload = () => {
+  const doc = new jsPDF();
+  const columns = [
+    { header: "Address" },
+    { header: "Street Address" },
+    { header: "Parking Type" },
+    { header: "Zip / Postcode" },
+    { header: "Parking Capacity" },
+  ];
 
+  const data = [];
+  const table = document.getElementById("data-table");
+  console.log(table);
+  const rows = table?.querySelectorAll("tbody tr") || [];
+  rows.forEach((row) => {
+    const rowData = [];
+    row.querySelectorAll("td").forEach((cell) => {
+      const cellData = cell?.textContent?.trim() || "";
+      rowData.push(cellData);
+    });
+    data.push(rowData);
+  });
+
+  autoTable(doc, {
+    head: [columns.map((column) => column.header)],
+    body: data,
+  });
+
+  doc.save("Parking_Area.pdf");
+};
 const thead = [
   { name: "Address" },
   { name: "Street Address" },
   { name: "Parking Type" },
   { name: "Zip / Postcode" },
   { name: "Parking Capacity" },
+  { name: "Agreement Document" },
   { name: "Actions" },
 ];
 
 const styles = {
   tableContainer: {
-    maxHeight: "50vh",
+    maxHeight: "60vh",
   },
   stickyHeader: {
     fontWeight: "bold",
@@ -52,13 +85,15 @@ const styles = {
 
 export default function ParkingArea({ location }) {
   console.log(location);
-   const [page, setPage] = useState(0);
-   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [data, setData] = useState();
-  const [erroropen, set_erroropen] = useState(false);
-    const [totalItems, setTotalItems] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [data, setData] = useState([]);
+  const [erroropen, set_erroropen] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
+  const BaseApi = createApiInstance("Base");
+  const [filteredArea, setfilteredArea] = useState([]);
 
   const [delete_id, set_delete_id] = useState("");
   const [loadingdelete, set_loadingdelete] = useState(false);
@@ -74,44 +109,71 @@ export default function ParkingArea({ location }) {
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+    const filtered = data.filter((item) => {
+      return (
+        item.address.toLowerCase().includes(e.target.value.toLowerCase()) ||
+        item.landmark.toLowerCase().includes(e.target.value.toLowerCase()) ||
+        item.type_parking_space
+          .toLowerCase()
+          .includes(e.target.value.toLowerCase()) ||
+        item.zip_code.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+    });
+    setfilteredArea(filtered);
+  };
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+    dataFetch(newPage, rowsPerPage);
   };
 
-
- const handleChangePage = (event, newPage) => {
-   setPage(newPage);
-   dataFetch(newPage, rowsPerPage);
- };
-
- const handleChangeRowsPerPage = (event) => {
-   const newRowsPerPage = parseInt(event.target.value, 10);
-   setRowsPerPage(newRowsPerPage);
-   setPage(0); // Reset page to 0 when changing rowsPerPage
-   dataFetch(0, newRowsPerPage);
- };
-
-
-
+  const handleChangeRowsPerPage = (event) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
+    dataFetch(0, newRowsPerPage);
+  };
 
   const token = localStorage.getItem("token");
 
+  const getImage = async (referenceNumber) => {
+    const response = await axios.post(
+      `${process.env.REACT_APP_DMS}`,
+      { referenceNo: referenceNumber },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          token: "8Ufn6Jio6Obv9V7VXeP7gbzHSyRJcKluQOGorAD58qA1IQKYE0",
+        },
+      }
+    );
+    const url = response.data?.data?.fullPath;
+    return url;
+  };
+
   const dataFetch = async (newPage, newRowsPerPage) => {
-    try {
-      const response = await axios.get(
-        `${
-          process.env.REACT_APP_BASE_URL
-        }/get-parking-area?limit=${newRowsPerPage}&page=${newPage + 1}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    BaseApi.get(`/get-parking-area?limit=${newRowsPerPage}&page=${newPage + 1}`)
+      .then((response) => {
+        if (response.data.status && response.data.data) {
+          const promises = response.data.data.data.map(async (incharge) => {
+            if (incharge.agreement_doc) {
+              const agreement_doc_url = await getImage(incharge.agreement_doc);
+              return { ...incharge, agreement_doc_url };
+            } else {
+              return incharge;
+            }
+          });
+
+          Promise.all(promises).then((inchargesWithImages) => {
+            setData(inchargesWithImages);
+            setfilteredArea(inchargesWithImages);
+            setPage(response.data.data.page - 1);
+            setTotalItems(response.data.data.totalItems);
+          });
         }
-      );
-      setData(response.data.data);
-       setTotalItems(response.data.data.totalItems);
-      return response.data;
-    } catch (error) {
-      console.error("There was an error onboarding the parking area!", error);
-    }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   useEffect(() => {
@@ -151,6 +213,11 @@ export default function ParkingArea({ location }) {
       });
   };
 
+
+
+  console.log("Data to be mapped: ", data);
+  console.log("Filter Area", filteredArea);
+
   return (
     <>
       <div className="flex flex-1 flex-row justify-center items-center">
@@ -165,7 +232,11 @@ export default function ParkingArea({ location }) {
             />
           </div>
           <div className="flex flex-1 mr-4">
-            <Button variant="contained" sx={{ width: "100%" }} disabled>
+            <Button
+              variant="contained"
+              sx={{ width: "100%", backgroundColor: "#6366F1", color: "white" }}
+              onClick={handleDownload}
+            >
               <div className="flex flex-1 justify-center items-center flex-row">
                 <div className="flex ">
                   <svg
@@ -177,12 +248,12 @@ export default function ParkingArea({ location }) {
                   >
                     <path
                       d="M11.4987 7.1875H6.70703C6.32578 7.1875 5.96015 7.33895 5.69057 7.60853C5.42098 7.87812 5.26953 8.24375 5.26953 8.625V16.2917C5.26953 16.6729 5.42098 17.0385 5.69057 17.3081C5.96015 17.5777 6.32578 17.7292 6.70703 17.7292H14.3737C14.7549 17.7292 15.1206 17.5777 15.3902 17.3081C15.6597 17.0385 15.8112 16.6729 15.8112 16.2917V11.5"
-                      stroke="#7A7A7A"
+                      stroke="white"
                       stroke-linecap="round"
                     />
                     <path
                       d="M11.9766 11.0208L18.0754 4.922M13.8932 4.3125H18.6849V9.10417"
-                      stroke="#7A7A7A"
+                      stroke="white"
                       stroke-linecap="round"
                       stroke-linejoin="round"
                     />
@@ -206,7 +277,7 @@ export default function ParkingArea({ location }) {
       </div>
       <Paper>
         <TableContainer style={styles.tableContainer} className="mt-5">
-          <Table stickyHeader>
+          <Table id="data-table" stickyHeader>
             <TableHead>
               <TableRow>
                 {thead.map((item) => (
@@ -216,7 +287,7 @@ export default function ParkingArea({ location }) {
             </TableHead>
 
             <TableBody>
-              {data?.data?.map((row) => (
+              {filteredArea?.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.landmark}</TableCell>
@@ -271,6 +342,15 @@ export default function ParkingArea({ location }) {
                         {row.four_wheeler_capacity}
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {row?.agreement_doc_url ? (
+                      <img className="w-20 h-20" src={row?.agreement_doc_url} />
+                    ) : (
+                      <div className="text-red-500 p-4 bg-red-200 w-fit font-bold rounded-md">
+                        Not Uploaded
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div style={styles.actionButtons}>

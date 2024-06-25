@@ -21,6 +21,41 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import toast, { Toaster } from "react-hot-toast";
 
+import autoTable from "jspdf-autotable";
+import { jsPDF } from "jspdf";
+
+const handleDownload = () => {
+  const doc = new jsPDF();
+
+  const columns = [
+    { header: "S.N" },
+    { header: "Full Name" },
+    { header: "Email" },
+    { header: "Location" },
+    { header: "Unique ID" },
+  ];
+
+  const data = [];
+  const table = document.getElementById("data-table");
+  console.log(table);
+  const rows = table?.querySelectorAll("tbody tr") || [];
+  rows.forEach((row) => {
+    const rowData = [];
+    row.querySelectorAll("td").forEach((cell) => {
+      const cellData = cell?.textContent?.trim() || "";
+      rowData.push(cellData);
+    });
+    data.push(rowData);
+  });
+
+  autoTable(doc, {
+    head: [columns.map((column) => column.header)],
+    body: data,
+  });
+
+  doc.save("Parking_Incharge.pdf");
+};
+
 export default function Parking_Incharge() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -178,7 +213,11 @@ export default function Parking_Incharge() {
           />
         </div>
         <div className="flex flex-1 mr-4">
-          <Button variant="contained" sx={{ width: "100%" }} disabled>
+          <Button
+            variant="contained"
+            sx={{ width: "100%", backgroundColor: "#6366F1", color: "white" }}
+            onClick={handleDownload}
+          >
             <div className="flex flex-1 justify-center items-center flex-row">
               <div className="flex ">
                 <svg
@@ -190,12 +229,12 @@ export default function Parking_Incharge() {
                 >
                   <path
                     d="M11.4987 7.1875H6.70703C6.32578 7.1875 5.96015 7.33895 5.69057 7.60853C5.42098 7.87812 5.26953 8.24375 5.26953 8.625V16.2917C5.26953 16.6729 5.42098 17.0385 5.69057 17.3081C5.96015 17.5777 6.32578 17.7292 6.70703 17.7292H14.3737C14.7549 17.7292 15.1206 17.5777 15.3902 17.3081C15.6597 17.0385 15.8112 16.6729 15.8112 16.2917V11.5"
-                    stroke="#7A7A7A"
+                    stroke="white"
                     stroke-linecap="round"
                   />
                   <path
                     d="M11.9766 11.0208L18.0754 4.922M13.8932 4.3125H18.6849V9.10417"
-                    stroke="#7A7A7A"
+                    stroke="white"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   />
@@ -218,7 +257,7 @@ export default function Parking_Incharge() {
       </div>
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
         <TableContainer sx={{ maxHeight: "60vh" }}>
-          <Table stickyHeader aria-label="sticky table">
+          <Table id="data-table" stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
                 <TableCell>S.N</TableCell>
@@ -247,14 +286,18 @@ export default function Parking_Incharge() {
                     {incharge.fitnessDocUrl ? (
                       <img className="w-20 h-20" src={incharge.fitnessDocUrl} />
                     ) : (
-                      <div>Not Uploaded</div>
+                      <div className="text-red-500 p-2 bg-red-200 w-fit font-bold rounded-md">
+                        Not Uploaded
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>
                     {incharge.kycDocUrl ? (
                       <img className="w-20 h-20" src={incharge.kycDocUrl} />
                     ) : (
-                      <div>Not Uploaded</div>
+                      <div className="text-red-500 text-sm p-2 bg-red-200 w-fit font-bold rounded-md">
+                        Not Uploaded
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>

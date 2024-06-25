@@ -5,16 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import Cookies from "js-cookie";
-
-const handle_Image_upload = async (
-  file,
-  type,
-  setUploadedFiles,
-  setUploading
-) => {
-  const formData = new FormData();
-  formData.append("img", file);
-};
+import createApiInstance from "../../../../AxiosInstance";
 
 const FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -29,7 +20,7 @@ const initialValues = {
   zip_code: "",
   landmark: "",
   four_wheeler_capacity: "",
-  agreement_doc: "",
+  agreement_doc_selected_file: null,
   two_wheeler_rate: "",
   four_wheeler_rate: "",
 };
@@ -49,13 +40,23 @@ const validationSchema = Yup.object({
   four_wheeler_capacity: Yup.string().required(
     "Four Wheeler Parking Capacity is required"
   ),
-  agreement_doc: Yup.string().required("Agreement Doc is required"),
-  two_wheeler_rate: Yup.string().required("Two Wheeler Rate is required"),
-  four_wheeler_rate: Yup.string().required("Four Wheeler Rate is required"),
+  agreement_doc_selected_file: Yup.mixed()
+    .required("Agreement Certificate File is required")
+    .test(
+      "fileSize",
+      "File too large, maximum size is 2MB",
+      (value) => !value || (value && value.size <= FILE_SIZE)
+    ),
+  two_wheeler_rate: Yup.string().notRequired("Two Wheeler Rate is required"),
+  four_wheeler_rate: Yup.string().notRequired("Four Wheeler Rate is required"),
 });
 
 export default function Area_form() {
   const [uploadedFiles, setUploadedFiles] = React.useState({});
+  const [imageURls, set_imageURls] = React.useState({});
+  const token = localStorage.getItem("token");
+  const BaseApi = createApiInstance("Base");
+
   const [uploading, setUploading] = React.useState({
     agreement_doc: false,
   });
@@ -65,19 +66,35 @@ export default function Area_form() {
   const onSubmit = async (values) => {
     set_loading(true);
     console.log(values);
+    const data = {
+      address: values.address,
+      zip_code: values.zip_code,
+      station: values.station,
+      landmark: values.landmark,
+      two_wheeler_capacity: values.two_wheeler_capacity,
+      four_wheeler_capacity: values.four_wheeler_capacity,
+      total_parking_area: values.total_parking_area,
+      type_parking_space: values.type_parking_space,
+      two_wheeler_rate:
+        values.type_parking_space === "0" ? values.two_wheeler_rate : "0",
+      four_wheeler_rate:
+        values.type_parking_space === "0" ? values.four_wheeler_rate : "0",
+      agreement_doc: uploadedFiles?.agreement_doc?.data[0]?.ReferenceNo,
+    };
+    console.log(data);
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL}/onboard-parking-area`,
-        values,
+        data,
         {
           headers: {
-            Authorization: `Bearer ${cookie}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response?.data?.status === true) {
-        set_loading(false); 
+        set_loading(false);
         toast.success("Parking area added suucessfully");
         window.location.replace("/parking/parkingArea");
         return response.data;
@@ -87,9 +104,59 @@ export default function Area_form() {
       }
     } catch (error) {
       console.error("There was an error onboarding the parking area!", error);
-    } 
+    }
+  };
+  const getImage = async (referenceNumber) => {
+    console.log(referenceNumber);
+    const response = await axios.post(
+      `${process.env.REACT_APP_DMS}`,
+      { referenceNo: referenceNumber },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          token: "8Ufn6Jio6Obv9V7VXeP7gbzHSyRJcKluQOGorAD58qA1IQKYE0",
+        },
+      }
+    );
+    console.log(response.data?.data?.fullPath);
+    const url = response.data?.data?.fullPath?.toString();
+    return url;
   };
 
+  const handle_Image_upload = async (
+    file,
+    type,
+    setUploadedFiles,
+    setUploading
+  ) => {
+    console.log("FIle", file);
+    const formData = new FormData();
+    const MAX_SIZE = 2 * 1024 * 1024;
+
+    formData.append("file", file);
+    if (file.size > MAX_SIZE) {
+    } else {
+      console.log(formData);
+      setUploading((prev) => ({ ...prev, [type]: true }));
+      try {
+        const response = await BaseApi.post("/file-upload", formData);
+        if (response?.data?.data) {
+          setUploadedFiles((prev) => ({ ...prev, [type]: response.data }));
+          const url = await getImage(response.data?.data[0]?.ReferenceNo);
+          set_imageURls((prev) => ({ ...prev, [type]: url }));
+        } else {
+          setUploadedFiles((prev) => ({
+            ...prev,
+            [type]: "Error",
+          }));
+        }
+      } catch (error) {
+        console.error("There was an error onboarding the parking area!", error);
+      } finally {
+        setUploading((prev) => ({ ...prev, [type]: false }));
+      }
+    }
+  };
   return (
     <>
       <Toaster />
@@ -117,7 +184,7 @@ export default function Area_form() {
                       (e.target.style.boxShadow = "0 1px 4px #000")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    maxLength={30}
+                    maxLength={100}
                     onKeyPress={(e) => {
                       if (
                         !(
@@ -298,7 +365,7 @@ export default function Area_form() {
                       (e.target.style.boxShadow = "0 1px 4px #000")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    maxLength={30}
+                    maxLength={100}
                     onKeyPress={(e) => {
                       if (
                         !(
@@ -347,110 +414,124 @@ export default function Area_form() {
                     className="text-red-500 ml-4"
                   />
                 </div>
+                {values.type_parking_space === "0" && (
+                  <>
+                    <div className="flex flex-1 flex-col mt-4">
+                      <label className="mb-2 ml-4" htmlFor="two_wheeler_rate">
+                        Two wheeler Rate
+                        <span className="text-red-500">*</span>
+                      </label>
+
+                      <Field
+                        type="text"
+                        id="two_wheeler_rate"
+                        name="two_wheeler_rate"
+                        className="border border-gray-300 px-3 py-4 rounded-md focus:outline-none ml-4 mr-4 transition duration-300"
+                        style={{ boxShadow: "0 1px 4px #fff" }}
+                        onFocus={(e) =>
+                          (e.target.style.boxShadow = "0 1px 4px #000")
+                        }
+                        onBlur={(e) => (e.target.style.boxShadow = "none")}
+                        maxLength={10}
+                        onKeyPress={(e) => {
+                          if (!(e.key <= "0" || e.key <= "9")) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <ErrorMessage
+                        name="two_wheeler_rate"
+                        component="div"
+                        className="text-red-500 ml-4"
+                      />
+                    </div>
+
+                    <div className="flex flex-1 flex-col mt-4">
+                      <label className="mb-2 ml-4" htmlFor="four_wheeler_rate">
+                        Four wheeler Rate
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <Field
+                        type="text"
+                        id="four_wheeler_rate"
+                        name="four_wheeler_rate"
+                        className="border border-gray-300 px-3 py-4 rounded-md focus:outline-none ml-4 mr-4 transition duration-300"
+                        style={{ boxShadow: "0 1px 4px #fff" }}
+                        onFocus={(e) =>
+                          (e.target.style.boxShadow = "0 1px 4px #000")
+                        }
+                        onBlur={(e) => (e.target.style.boxShadow = "none")}
+                        maxLength={10}
+                        onKeyPress={(e) => {
+                          if (!(e.key <= "0" || e.key <= "9")) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <ErrorMessage
+                        name="four_wheeler_rate"
+                        component="div"
+                        className="text-red-500 ml-4"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div className="flex flex-1 flex-col mt-4">
-                  <label className="mb-2 ml-4" htmlFor="two_wheeler_rate">
-                    Two wheeler Rate
-                    <span className="text-red-500">*</span>
-                  </label>
-
-                  <Field
-                    type="text"
-                    id="two_wheeler_rate"
-                    name="two_wheeler_rate"
-                    className="border border-gray-300 px-3 py-4 rounded-md focus:outline-none ml-4 mr-4 transition duration-300"
-                    style={{ boxShadow: "0 1px 4px #fff" }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow = "0 1px 4px #000")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    maxLength={10}
-                    onKeyPress={(e) => {
-                      if (!(e.key <= "0" || e.key <= "9")) {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  <ErrorMessage
-                    name="two_wheeler_rate"
-                    component="div"
-                    className="text-red-500 ml-4"
-                  />
-                </div>
-
-                <div className="flex flex-1 flex-col mt-4">
-                  <label className="mb-2 ml-4" htmlFor="four_wheeler_rate">
-                    Four wheeler Rate
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <Field
-                    type="text"
-                    id="four_wheeler_rate"
-                    name="four_wheeler_rate"
-                    className="border border-gray-300 px-3 py-4 rounded-md focus:outline-none ml-4 mr-4 transition duration-300"
-                    style={{ boxShadow: "0 1px 4px #fff" }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow = "0 1px 4px #000")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    maxLength={30}
-                    onKeyPress={(e) => {
-                      if (!(e.key <= "0" || e.key <= "9")) {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  <ErrorMessage
-                    name="four_wheeler_rate"
-                    component="div"
-                    className="text-red-500 ml-4"
-                  />
-                </div>
-
-                <div className="flex flex-1 flex-col mt-4">
-                  <label className="mb-2 ml-4" htmlFor="agreement_doc">
+                  <label
+                    className="mb-2 ml-4"
+                    htmlFor="agreement_doc_selected_file"
+                  >
                     Agreement Doc
                     <span className="text-red-500">*</span>
                   </label>
-                  <Field
+                  <input
                     type="file"
-                    id="agreement_doc"
-                    name="agreement_doc"
+                    id="agreement_doc_selected_file"
+                    name="agreement_doc_selected_file"
+                    accept="image/*"
                     className="border border-gray-300 px-3 py-4 rounded-md focus:outline-none ml-4 mr-4 transition duration-300"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
+                    onChange={(event) => {
+                      setFieldValue(
+                        "agreement_doc_selected_file",
+                        event.target.files[0]
+                      );
+
+                      handle_Image_upload(
+                        event.target.files[0],
+                        "agreement_doc",
+                        setUploadedFiles,
+                        setUploading
+                      );
+                    }}
                   />
                   <ErrorMessage
-                    name="agreement_doc"
+                    name="agreement_doc_selected_file"
                     component="div"
                     className="text-red-500 ml-4"
                   />
-                  {values.agreement_doc && (
-                    <div className="flex flex-1 justify-end mr-8 ml-8 mt-2">
-                      <button
-                        type="button"
-                        className="flex justify-end items-end ml-4 px-4 w-fit py-2 bg-[#4245D9] text-white rounded"
-                        onClick={() =>
-                          handle_Image_upload(
-                            values.agreement_doc,
-                            "agreement_doc",
-                            setUploadedFiles,
-                            setUploading
-                          )
-                        }
-                        disabled={uploading.agreement_doc}
-                      >
-                        {uploading.agreement_doc ? "Uploading..." : "Upload"}
-                      </button>
+
+                  {uploadedFiles?.agreement_doc === "Error" ? (
+                    <div className="text-red-500 ml-4 mt-2">
+                      Error In Uploading the Agreement Certificate
                     </div>
-                  )}
-                  {uploadedFiles.agreement_doc && (
-                    <div className="text-green-500 ml-4 mt-2">
-                      Agreement Doc Card Uploaded
-                    </div>
+                  ) : (
+                    uploadedFiles?.agreement_doc && (
+                      <div className="text-green-500 ml-4 mt-2">
+                        Agreement Certificate Uploaded
+                        <div>
+                          <img
+                            src={imageURls?.agreement_doc}
+                            className="h-[50px] w-[50px]"
+                          />
+                        </div>
+                      </div>
+                    )
                   )}
                 </div>
 
@@ -472,6 +553,7 @@ export default function Area_form() {
                       onClick={() => {
                         resetForm();
                         setUploadedFiles({});
+                        window.location.reload();
                       }}
                       className="flex w-20 h-10 md:w-[80%] border border-[#4245D9] rounded-md shadow-md justify-center items-center"
                     >

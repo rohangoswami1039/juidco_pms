@@ -539,13 +539,15 @@ export default function Incharge_form() {
                     placeholder="Enter your address"
                     className="border border-gray-300 px-3 py-4 rounded-md focus:outline-none ml-4 mr-4 transition duration-300"
                     style={{ boxShadow: "0 1px 4px #fff" }}
-                    maxLength={80}
+                    maxLength={100}
                     onKeyPress={(e) => {
                       if (
                         !(
-                          (e.key >= "0" && e.key <= "9") ||
-                          (e.key >= "a" && e.key <= "z") ||
-                          (e.key >= "A" && e.key <= "Z")
+                          e.key <= "a" ||
+                          e.key <= "z" ||
+                          e.key <= "A" ||
+                          e.key <= "Z" ||
+                          (e.key = "")
                         )
                       ) {
                         e.preventDefault();
@@ -667,6 +669,7 @@ export default function Incharge_form() {
                       onClick={() => {
                         resetForm();
                         setUploadedFiles({});
+                        window.location.reload();
                       }}
                       className="flex w-20 h-10 md:w-[80%] border border-[#4245D9] rounded-md shadow-md justify-center items-center"
                     >

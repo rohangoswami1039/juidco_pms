@@ -38,8 +38,8 @@ export default function RMC_Dashboard() {
     new Date(dateString).toLocaleDateString("en-GB");
 
   const dates = count.two_wheeler
-    .concat(count.four_wheeler)
-    .map((item) => formatDate(item.date));
+    ?.concat(count?.four_wheeler)
+    ?.map((item) => formatDate(item.date));
 
   const uniqueDates = [...new Set(dates)];
 
@@ -47,8 +47,8 @@ export default function RMC_Dashboard() {
     new Date(dateString).toLocaleDateString("en-GB");
 
   const datess = count.two_wheeler
-    .concat(counts.four_wheeler)
-    .map((item) => formatDates(item.date));
+    ?.concat(counts?.four_wheeler)
+    ?.map((item) => formatDates(item.date));
 
   const uniqueDatess = [...new Set(datess)];
 
@@ -70,7 +70,7 @@ export default function RMC_Dashboard() {
       const seriesData = responseData?.data?.map((item) => item.sum);
       setSeries(seriesData);
 
-      const x = responseData.data.map((item) => item.to);
+      const x = responseData?.data?.map((item) => item.to);
       setXaxis(x);
     } catch (error) {
       console.error("There was an error onboarding the parking area!", error);
@@ -246,11 +246,11 @@ export default function RMC_Dashboard() {
     series: [
       {
         name: "Two Wheeler",
-        data: counts?.two_wheeler.map((item) => item?.vehicle_count),
+        data: counts?.two_wheeler?.map((item) => item?.vehicle_count),
       },
       {
         name: "Four Wheeler",
-        data: counts?.four_wheeler.map((item) => item?.vehicle_count),
+        data: counts?.four_wheeler?.map((item) => item?.vehicle_count),
       },
     ],
     options: {
@@ -284,11 +284,11 @@ export default function RMC_Dashboard() {
     series: [
       {
         name: "Two Wheeler",
-        data: count.two_wheeler.map((item) => item?.total_amount),
+        data: count?.two_wheeler?.map((item) => item?.total_amount),
       },
       {
         name: "Four Wheeler",
-        data: count.four_wheeler.map((item) => item?.total_amount),
+        data: count?.four_wheeler?.map((item) => item?.total_amount),
       },
     ],
     options: {

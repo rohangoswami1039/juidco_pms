@@ -4,14 +4,24 @@ import bus from "../../assets/icons/Parking/Images/bus.png";
 import { useNavigate } from "react-router-dom";
 import background_image from "../../assets/background_image.png";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { logout } from "../../redux/slice/slice";
 
 export default function Incharge_Dashboard() {
   const InchargeId = localStorage.getItem("InchargeId");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [parkingId, set_parkingId] = useState();
   const [parkingAreaType, set_parkingAreaType] = useState();
+  function handle_logout() {
+    const confirm = window.confirm("Are you sure want to logout?");
+    if (confirm) {
+      dispatch(logout());
+      window.location.replace("/parking");
+    }
+  }
 
   const getCurrentDateFormatted = () => {
     const today = new Date();
@@ -111,7 +121,10 @@ export default function Incharge_Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="flex cursor-pointer h-10 w-10 m-5 rounded-xl shadow-md justify-center items-center bg-[#5457D6] ml-4">
+            <div
+              onClick={handle_logout}
+              className="flex cursor-pointer h-10 w-10 m-5 rounded-xl shadow-md justify-center items-center bg-[#5457D6] ml-4"
+            >
               <svg
                 width="24"
                 height="24"
@@ -131,7 +144,7 @@ export default function Incharge_Dashboard() {
         <div className="relative w-full flex-col overflow-y-auto">
           <div className="flex flex-col w-full h-fit justify-center ">
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex w-[70%] flex-col justify-center items-center">
+              <div className="flex w-[70%] flex-col justify-start items-start">
                 <div className="flex flex-1 justify-center items-center mt-2 mb-2 flex-row">
                   <div className="flex text-base md:text-sm lg:text-base xl:text-lg mr-4 font-bold">
                     Incharge ID:
@@ -142,7 +155,7 @@ export default function Incharge_Dashboard() {
                 </div>
                 <div className="flex justify-center items-center mt-2 mb-2 flex-row">
                   <div className="flex text-base md:text-sm lg:text-base xl:text-lg mr-4 font-bold">
-                    Parking Area ID:
+                    Parking ID:
                   </div>
                   <div className="flex text-md md:text-xs lg:text-lg xl:text-xl">
                     {parkingId}
@@ -151,7 +164,7 @@ export default function Incharge_Dashboard() {
 
                 <div className="flex justify-center items-center mt-2 mb-2 flex-row">
                   <div className="flex text-base md:text-sm lg:text-base xl:text-lg mr-4 font-bold">
-                    Parking Area Type:
+                    Parking Type:
                   </div>
                   <div className="flex text-md md:text-xs lg:text-lg xl:text-xl">
                     {parkingAreaType}
@@ -192,7 +205,12 @@ export default function Incharge_Dashboard() {
                   </svg>
                 </button>
 
-                <button onClick={()=>{navigate("/checker_report");}} className="flex m-4 flex-row w-[90%] text-lg md:text-xl lg:text-2xl xl:text-3xl  border-2 text-black hover:text-white font-md border-[#4338CA] hover:bg-[#4338CA] p-2 rounded-md justify-center items-center hover:fill-white">
+                <button
+                  onClick={() => {
+                    navigate("/checker_report");
+                  }}
+                  className="flex m-4 flex-row w-[90%] text-lg md:text-xl lg:text-2xl xl:text-3xl  border-2 text-black hover:text-white font-md border-[#4338CA] hover:bg-[#4338CA] p-2 rounded-md justify-center items-center hover:fill-white"
+                >
                   Report Generation
                   <svg
                     width="34"

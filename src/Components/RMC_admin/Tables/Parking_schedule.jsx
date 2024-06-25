@@ -21,25 +21,83 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
+import autoTable from "jspdf-autotable";
+import { jsPDF } from "jspdf";
+
+const handleDownload = () => {
+  const doc = new jsPDF();
+
+  const columns = [
+    { header: "Address" },
+    { header: "Post Code" },
+    { header: "Incharge Name" },
+    { header: "Incharge ID" },
+    { header: "From Date" },
+    { header: "To Date" },
+    { header: "From" },
+    { header: "To" },
+    { header: "Created At" },
+  ];
+
+  const data = [];
+  const table = document.getElementById("data-table");
+  console.log(table);
+  const rows = table?.querySelectorAll("tbody tr") || [];
+  rows.forEach((row) => {
+    const rowData = [];
+    row.querySelectorAll("td").forEach((cell) => {
+      const cellData = cell?.textContent?.trim() || "";
+      rowData.push(cellData);
+    });
+    data.push(rowData);
+  });
+
+  autoTable(doc, {
+    head: [columns.map((column) => column.header)],
+    body: data,
+  });
+
+  doc.save("Parking_Schedule.pdf");
+};
+
 const thead = [
   { name: "Address" },
   { name: "Post Code" },
   { name: "Incharge Name" },
   { name: "Incharge ID" },
-  { name: "Date" },
+  { name: "From Date" },
+  { name: "To Date " },
   { name: "From" },
   { name: "To" },
+  { name: "Created At" },
+
   /*   { name: "Schedule Type" },
    */ { name: "Actions" },
 ];
 
+const styles = {
+  tableContainer: {
+    maxHeight: "60vh",
+  },
+  stickyHeader: {
+    fontWeight: "bold",
+    color: "#000000",
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+  },
+  actionButtons: {
+    display: "flex",
+    gap: "8px",
+  },
+};
 export default function ParkingSchedule() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-
+  const [filteredData, setFilteredData] = useState([]);
   const [erroropen, set_erroropen] = useState(false);
 
   const [delete_id, set_delete_id] = useState("");
@@ -56,9 +114,20 @@ export default function ParkingSchedule() {
   };
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    const query = e.target.value.toLowerCase();
+    const filtered = data.filter((item) => {
+      return (
+        item.address.toLowerCase().includes(query) ||
+        item.first_name.toLowerCase().includes(query) ||
+        item.middle_name.toLowerCase().includes(query) ||
+        item.last_name.toLowerCase().includes(query) ||
+        item.incharge_id.toLowerCase().includes(query)
+      );
+    });
+    setTotalItems(filtered.length);
+    setData(filtered);
+    setSearchQuery(query);
   };
-
   const formatDate = (isoDateString) => {
     const date = new Date(isoDateString);
 
@@ -169,7 +238,11 @@ export default function ParkingSchedule() {
           />
         </div>
         <div className="flex flex-1 mr-4">
-          <Button variant="contained" sx={{ width: "100%" }} disabled>
+          <Button
+            variant="contained"
+            sx={{ width: "100%", backgroundColor: "#6366F1", color: "white" }}
+            onClick={handleDownload}
+          >
             <div className="flex flex-1 justify-center items-center flex-row">
               <div className="flex ">
                 <svg
@@ -181,12 +254,12 @@ export default function ParkingSchedule() {
                 >
                   <path
                     d="M11.4987 7.1875H6.70703C6.32578 7.1875 5.96015 7.33895 5.69057 7.60853C5.42098 7.87812 5.26953 8.24375 5.26953 8.625V16.2917C5.26953 16.6729 5.42098 17.0385 5.69057 17.3081C5.96015 17.5777 6.32578 17.7292 6.70703 17.7292H14.3737C14.7549 17.7292 15.1206 17.5777 15.3902 17.3081C15.6597 17.0385 15.8112 16.6729 15.8112 16.2917V11.5"
-                    stroke="#7A7A7A"
+                    stroke="white"
                     stroke-linecap="round"
                   />
                   <path
                     d="M11.9766 11.0208L18.0754 4.922M13.8932 4.3125H18.6849V9.10417"
-                    stroke="#7A7A7A"
+                    stroke="white"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   />
@@ -207,9 +280,9 @@ export default function ParkingSchedule() {
           </Link>
         </div>
       </div>
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
-        <TableContainer sx={{ maxHeight: "300px" }}>
-          <Table stickyHeader aria-label="sticky table">
+      <Paper>
+        <TableContainer style={styles.tableContainer}>
+          <Table id="data-table" stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
                 {thead.map((item, index) => (
@@ -225,8 +298,11 @@ export default function ParkingSchedule() {
                   <TableCell>{row.first_name}</TableCell>
                   <TableCell>{row.incharge_id}</TableCell>
                   <TableCell>{formatDate(row.from_date)}</TableCell>
+                  <TableCell>{formatDate(row.to_date)}</TableCell>
                   <TableCell>{formatTime(row.from_time)}</TableCell>
                   <TableCell>{row.to_time}</TableCell>
+                  <TableCell>{formatDate(row.created_at)}</TableCell>
+
                   {/* <TableCell>
                     <div
                       className={`flex p-2 

@@ -8,7 +8,7 @@ export default function Sidebar() {
   const location = useLocation();
   const path = location.pathname;
   return (
-    <div className="flex w-full px-4 flex-col shadow-lg border-r-2 rounded-r-md justify-center items-start transition-all duration-300 ease-in-out ">
+    <div className="flex w-full px-4 flex-col   rounded-r-md justify-center items-start transition-all duration-300 ease-in-out ">
       <div className="flex ">
         <div className="flex flex-1 flex-col justify-center items-center">
           <div className="flex flex-1 mt-8 justify-center">
