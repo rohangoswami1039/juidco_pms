@@ -4,9 +4,7 @@ import { Formik, Form, Field } from "formik";
 import parkingStop from "../../assets/parking-stop.png";
 import icon from "../../assets/two 1.jpg";
 import car from "../../assets/car 1.jpg";
-import createApiInstance from "../../AxiosInstance";
 import axios from "axios";
-import Cookies from "js-cookie";
 
 export default function ParkingReport() {
   const navigate = useNavigate();
@@ -36,7 +34,7 @@ export default function ParkingReport() {
           },
         }
       );
-      setData(response.data.data);
+      setData(response?.data?.data);
     } catch (error) {
       console.error("There was an error onboarding the parking area!", error);
     }
@@ -52,7 +50,7 @@ export default function ParkingReport() {
           },
         }
       );
-      setLocation(response.data.data);
+      setLocation(response?.data?.data);
     } catch (error) {
       console.error("There was an error onboarding the parking area!", error);
     }
@@ -152,32 +150,6 @@ export default function ParkingReport() {
                               ))}
                             </Field>
                           </div>
-                          {/* <div className="flex flex-1 mr-2">
-                            <Field
-                              type="text"
-                              name="inChargeId"
-                              placeholder="In-Charge ID"
-                              className="w-full border-2 rounded p-2"
-                            />
-                          </div>
-                          <div className="flex flex-1 mr-2 ">
-                            <Field
-                              type="text"
-                              name="name"
-                              placeholder="Name"
-                              className="w-full border-2 rounded p-2"
-                            />
-                          </div>
-
-
-                          <div className="flex flex-1">
-                            <button
-                              type="submit"
-                              className="w-full bg-[#6366F1] shadow-md border-2  text-white p-2 rounded-md"
-                            >
-                              Search Filter
-                            </button>
-                          </div> */}
                         </div>
                       </Form>
                     )}
@@ -189,7 +161,7 @@ export default function ParkingReport() {
 
           <div className="flex flex-col overflow-y-scroll">
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col h-[370px] w-[700px] justify-start items-center border-2 shadow-md rounded-md  bg-white m-4">
+              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 shadow-xl rounded-md  bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between p-5">
                   <div>
                     <h5 className="p-1">
@@ -233,7 +205,7 @@ export default function ParkingReport() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col h-[370px] w-[700px] justify-start items-center border-2 shadow-md rounded-md bg-white m-4">
+              <div className="flex flex-col h-[400px] w-[600px]  justify-start items-center border-2 shadow-md rounded-md bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -299,7 +271,7 @@ export default function ParkingReport() {
             </div>
 
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col h-[370px] w-[700px] justify-start items-center border-2 shadow-md rounded-md bg-white m-4 relative">
+              <div className="flex flex-col h-[400px] w-[600px]  justify-start items-center border-2 shadow-md rounded-md bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -341,7 +313,7 @@ export default function ParkingReport() {
                 </div>
               </div>
 
-              <div className="flex flex-col h-[370px] w-[700px] justify-start items-center border-2 shadow-md rounded-md bg-white m-4 relative">
+              <div className="flex flex-col h-[200px] w-[600px]  justify-start items-center border-2 shadow-md rounded-md bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
