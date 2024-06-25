@@ -286,7 +286,7 @@ export default function Parking_Incharge() {
                     {incharge.fitnessDocUrl ? (
                       <img className="w-20 h-20" src={incharge.fitnessDocUrl} />
                     ) : (
-                      <div className="text-red-500 p-2 bg-red-200 w-fit font-bold rounded-md">
+                      <div className="text-red-500 p-2 text-xs bg-red-200 w-fit font-bold rounded-md">
                         Not Uploaded
                       </div>
                     )}
@@ -295,7 +295,7 @@ export default function Parking_Incharge() {
                     {incharge.kycDocUrl ? (
                       <img className="w-20 h-20" src={incharge.kycDocUrl} />
                     ) : (
-                      <div className="text-red-500 text-sm p-2 bg-red-200 w-fit font-bold rounded-md">
+                      <div className="text-red-500 text-xs p-2 bg-red-200 w-fit font-bold rounded-md">
                         Not Uploaded
                       </div>
                     )}

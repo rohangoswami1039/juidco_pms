@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { TurnLeftOutlined } from "@mui/icons-material";
 
 export default function RMC_Dashboard() {
   const navigate = useNavigate();
@@ -176,14 +177,17 @@ export default function RMC_Dashboard() {
   ///////////////////////////////////////////// bar element data /////////////////////////////////////////////////////////
 
   const sum = series?.reduce((acc, current) => acc + current, 0);
-  const unOrgTotal = pie?.UnOrganized?.reduce(
+  const unOrgTotal = count?.two_wheeler?.reduce(
     (total, item) => total + item?.total_amount,
     0
   );
-  const orgTotal = pie?.Organized?.reduce(
+  const orgTotal = count?.four_wheeler?.reduce(
     (total, item) => total + item?.total_amount,
     0
   );
+  console.log(unOrgTotal, orgTotal);
+  console.log(pie);
+  console.log(count);
 
   const data = {
     series: [
@@ -232,7 +236,7 @@ export default function RMC_Dashboard() {
           expandOnClick: false,
         },
       },
-      labels: ["Unorganized Collection", "Organized Collection"],
+      labels: ["Two Wheeler Collection", "Four Wheeler Collection"],
       dataLabels: {
         enabled: false,
       },
@@ -258,12 +262,12 @@ export default function RMC_Dashboard() {
         height: 350,
         type: "bar",
         zoom: {
-          enabled: false,
+          enabled: true,
         },
       },
       colors: ["#4A3AFF", "#C893FD"],
       dataLabels: {
-        enabled: false,
+        enabled: true,
       },
       stroke: {
         curve: "smooth",
@@ -280,15 +284,25 @@ export default function RMC_Dashboard() {
     },
   };
 
+  console.log(
+    "Data >> ",
+    pie?.UnOrganized?.map((item) => item?.total_amount).length
+  );
   const bar2 = {
     series: [
       {
-        name: "Two Wheeler",
-        data: count?.two_wheeler?.map((item) => item?.total_amount),
+        name: "UnOrganized",
+        data:
+          pie?.UnOrganized?.map((item) => item?.total_amount).length == 0
+            ? [0]
+            : pie?.UnOrganized?.map((item) => item?.total_amount),
       },
       {
-        name: "Four Wheeler",
-        data: count?.four_wheeler?.map((item) => item?.total_amount),
+        name: "Organized",
+        data:
+          pie?.Organized?.map((item) => item?.total_amount).length == 0
+            ? [0]
+            : pie?.Organized?.map((item) => item?.total_amount),
       },
     ],
     options: {
@@ -301,7 +315,7 @@ export default function RMC_Dashboard() {
       },
       colors: ["#4A3AFF", "#C893FD"],
       dataLabels: {
-        enabled: false,
+        enabled: true,
       },
       stroke: {
         curve: "smooth",
@@ -322,7 +336,7 @@ export default function RMC_Dashboard() {
 
   return (
     <>
-      <div className="flex flex-1 overflow-scroll ">
+      <div className="flex flex-1 overflow-y-scroll overflow-x-hidden ">
         <div className="flex flex-col flex-1 bg-[#F9FAFC]">
           <div className="flex h-10 justify-between items-center mt-5 p-5">
             <div className="flex ml-4 ">
@@ -371,8 +385,8 @@ export default function RMC_Dashboard() {
             <div className="flex flex-1 justify-center items-center">
               {/* col-1 */}
 
-              <div className="flex flex-col h-[370px] w-[700px] justify-start items-center border-2  bg-white m-4">
-                <div className="flex flex-row w-full h-[50px] justify-between">
+              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center rounded-md shadow-xl border-2  bg-white m-2">
+                <div className="flex flex-row w-full h-fit justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
                       <svg
@@ -417,7 +431,7 @@ export default function RMC_Dashboard() {
                       />
                     </div>
                     <div className="flex-col mt-[9rem] p-2 justify-center items-center">
-                      <p className="text-3xl ">
+                      <p className="text-xl ">
                         ₹{" "}
                         <span className="font-bold text-green-500">{sum}</span>
                       </p>
@@ -432,7 +446,7 @@ export default function RMC_Dashboard() {
 
               {/* col-2 */}
 
-              <div className="flex flex-col h-[370px] w-[700px] justify-start items-center border-2 shadow-md rounded-md bg-white m-4">
+              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 rounded-md shadow-xl bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -500,28 +514,28 @@ export default function RMC_Dashboard() {
                       />
                     </div>
 
-                    <div className="flex gap-2 grid-cols-2 mt-[9rem] p-2 justify-center items-center">
-                      <div>
-                        <p className="text-3xl">
+                    <div className="flex gap-2 grid-cols-2 mt-[9rem]  justify-center items-center">
+                      <div className="flex flex-1 flex-col">
+                        <p className="text-xl">
                           ₹{" "}
                           <span className="font-bold text-green-500">
                             {unOrgTotal}
                           </span>
                         </p>
                         <p className="text-sm ">
-                          Total Unorganized<br></br> Collection
+                          Total Two Wheeler<br></br> Collection
                         </p>
                       </div>
 
-                      <div>
-                        <p className="text-3xl ">
+                      <div className="flex flex-1 flex-col">
+                        <p className="text-xl ">
                           ₹{" "}
                           <span className="font-bold text-green-500">
                             {orgTotal}
                           </span>
                         </p>
                         <p className="text-sm">
-                          Total Organized<br></br> Collection
+                          Total Four Wheeler<br></br> Collection
                         </p>
                       </div>
                     </div>
@@ -533,7 +547,7 @@ export default function RMC_Dashboard() {
             <div className="flex flex-1 justify-center items-center">
               {/* col-1 */}
 
-              <div className="flex flex-col h-[400px] w-[700px] justify-start items-center border-2 shadow-md rounded-md bg-white m-4 relative">
+              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 rounded-md shadow-xl bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -608,7 +622,7 @@ export default function RMC_Dashboard() {
 
               {/* col-2 */}
 
-              <div className="flex flex-col h-[400px] w-[700px] justify-start items-center border-2 shadow-md rounded-md bg-white m-4 relative">
+              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 rounded-md shadow-xl bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">

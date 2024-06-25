@@ -21,7 +21,7 @@ export default function Incharge_Dashboard() {
       dispatch(logout());
       window.location.replace("/parking");
     }
-  }
+  } 
 
   const getCurrentDateFormatted = () => {
     const today = new Date();

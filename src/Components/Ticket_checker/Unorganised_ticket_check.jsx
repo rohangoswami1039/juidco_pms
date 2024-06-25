@@ -78,7 +78,7 @@ export default function Unorganised_ticket_check({
       "Vehicle No: " +
       data?.vehicle_no +
       "\n \n" +
-      "Parking ID: " +
+      "Incharge ID: " +
       data?.incharge_id +
       "\n \n" +
       "Receipt: " +
