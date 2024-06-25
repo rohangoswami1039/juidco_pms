@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import Cookies from "js-cookie";
 
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -22,7 +21,6 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import toast, { Toaster } from "react-hot-toast";
 import createApiInstance from "../../../AxiosInstance";
-
 import autoTable from "jspdf-autotable";
 import { jsPDF } from "jspdf";
 
@@ -212,8 +210,6 @@ export default function ParkingArea({ location }) {
         console.log(e);
       });
   };
-
-
 
   console.log("Data to be mapped: ", data);
   console.log("Filter Area", filteredArea);

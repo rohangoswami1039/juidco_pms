@@ -45,9 +45,9 @@ const PrivateRoute = ({ Element }) => {
             />
           </div>
 
-          <div className="flex flex-1 overflow-auto">
+          <div className="flex flex-1 flex-row overflow-hidden">
             <div className="flex  w-fit ">
-              <div className="flex flex-1">
+              <div className="flex flex-1 ">
                 <motion.div
                   className={`${
                     hide ? "hidden" : "flex"
@@ -60,7 +60,7 @@ const PrivateRoute = ({ Element }) => {
                 </motion.div>
               </div>
             </div>
-            <div className="flex flex-1 ">
+            <div className="flex flex-1 overflow-auto">
               <Element />
             </div>
           </div>
