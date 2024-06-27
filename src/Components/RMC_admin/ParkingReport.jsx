@@ -183,7 +183,7 @@ export default function ParkingReport() {
                     }}
                   >
                     {({ values, handleChange }) => (
-                      <Form className="w-full">
+                      <Form className="w-full flex flex-1 flex-row">
                         <div className="flex flex-row">
                           <div className="flex  mr-2">
                             <label>
@@ -299,6 +299,10 @@ export default function ParkingReport() {
                             </div>
                           </div>
                         )}
+
+                        <div className="flex p-4 rounded-md bg-red-500 flex-1 justify-center items-center">
+                          <div className="flex">sdas</div>
+                        </div>
                       </Form>
                     )}
                   </Formik>
