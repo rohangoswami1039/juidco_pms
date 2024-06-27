@@ -385,7 +385,7 @@ export default function RMC_Dashboard() {
             <div className="flex flex-1 justify-center items-center">
               {/* col-1 */}
 
-              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center rounded-md shadow-xl border-2  bg-white m-2">
+              <div className="flex flex-col h-[400px] flex-1 justify-start items-center rounded-md shadow-xl border-2  bg-white m-2">
                 <div className="flex flex-row w-full h-fit justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -446,7 +446,7 @@ export default function RMC_Dashboard() {
 
               {/* col-2 */}
 
-              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 rounded-md shadow-xl bg-white m-2">
+              <div className="flex flex-col h-[400px] flex-1 justify-start items-center border-2 rounded-md shadow-xl bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -547,7 +547,7 @@ export default function RMC_Dashboard() {
             <div className="flex flex-1 justify-center items-center">
               {/* col-1 */}
 
-              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 rounded-md shadow-xl bg-white m-2 relative">
+              <div className="flex flex-col h-[400px] flex-1 justify-start items-center border-2 rounded-md shadow-xl bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -622,7 +622,7 @@ export default function RMC_Dashboard() {
 
               {/* col-2 */}
 
-              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 rounded-md shadow-xl bg-white m-2 relative">
+              <div className="flex flex-col h-[400px] flex-1 justify-start items-center border-2 rounded-md shadow-xl bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">

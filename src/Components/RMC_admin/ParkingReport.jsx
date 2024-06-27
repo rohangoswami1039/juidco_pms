@@ -19,6 +19,18 @@ export default function ParkingReport() {
   const [location, setLocation] = useState();
   const [locationId, setLocationID] = useState();
 
+  const [incharge, set_incharge] = useState();
+  const [totalVechicle, set_totalVechicle] = useState(0);
+  const [totalVechiclePrice, set_totalVechiclePrice] = useState(0);
+  const [selectedOption, setSelectedOption] = useState("");
+
+  const [selected_incharge, set_selected_incharge] = useState();
+
+  const [two_wheeler,set_two_wheeler] =useState(0)
+  const [four_wheeler,set_four_wheeler] = useState(0)
+
+  const [two_wheeler_price,set_two_wheeler_price] = useState(0)
+  const [four_wheeler_price,set_four_wheeler_price] =useState(0)
   const token = localStorage.getItem("token");
 
   const fetchData = async (values, resetForm) => {
@@ -56,12 +68,6 @@ export default function ParkingReport() {
     }
   };
 
-  const [incharge, set_incharge] = useState();
-  const [totalVechicle, set_totalVechicle] = useState(0);
-  const [totalVechiclePrice, set_totalVechiclePrice] = useState(0);
-  const [selectedOption, setSelectedOption] = useState("");
-
-  const [selected_incharge, set_selected_incharge] = useState();
   console.log("selected Incharge",selected_incharge)
 
   const fetchIncharge = async () => {
@@ -94,14 +100,32 @@ export default function ParkingReport() {
   }, []);
 
   const SetTotal_Vechicle = () => {
-    const twoWheelerCount = data?.two_wheeler[0]?.count || 0;
-    const fourWheelerCount = data?.four_wheeler[0]?.count || 0;
-    const totalVehicle = twoWheelerCount + fourWheelerCount;
+    var twoWheelerCount = 0
+    var fourWheelerCount = 0;
 
-    const twoWheelerSum = data?.two_wheeler[0]?.sum || 0;
-    const fourWheelerSum = data?.four_wheeler[0]?.sum || 0;
+    data?.four_wheeler?.forEach(item => {
+        fourWheelerCount += item.count;
+    });
+    data?.two_wheeler?.forEach(item=>{
+      twoWheelerCount += item.count;
+    })
+    
+    var twoWheelerSum =  0;
+    var fourWheelerSum =  0;
+   
+    data?.two_wheeler?.forEach(item =>{
+      twoWheelerSum +=item.sum
+    })
+    data?.four_wheeler?.forEach(item =>{
+      fourWheelerSum +=item.sum 
+    })
+
+    set_two_wheeler(twoWheelerCount)
+    set_four_wheeler(fourWheelerCount)
+    set_two_wheeler_price(twoWheelerSum)
+    set_four_wheeler_price(fourWheelerSum)
     const totalVehiclePrice = twoWheelerSum + fourWheelerSum;
-
+    const totalVehicle = twoWheelerCount + fourWheelerCount;
     set_totalVechicle(totalVehicle);
     set_totalVechiclePrice(totalVehiclePrice);
   };
@@ -201,7 +225,7 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
   }
 }
 
-
+console.log("data from the server >>> ",data)
   return (
     <>
       <div className="flex flex-1 overflow-scroll ">
@@ -487,8 +511,6 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
                             </button>
                           </div>
                         )}
-
-                        
                         </div>
                       </Form>
                     )}
@@ -500,7 +522,7 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
 
           <div className="flex flex-col overflow-y-scroll">
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col h-[400px] w-[600px] justify-start items-center border-2 shadow-xl rounded-md  bg-white m-2">
+              <div className="flex flex-col h-[400px] flex-1 justify-start items-center border-2 shadow-xl rounded-md  bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between p-5">
                   <div>
                     <h5 className="p-1 m-2">
@@ -508,7 +530,7 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
                       {data?.location_info[0]?.type_parking_space && (
                         <span
                           className={`${
-                            data?.location_info[0]?.type_parking_space ==
+                            data?.location_info[0]?.type_parking_space ===
                             "Organized"
                               ? "text-gray-500 bg-[#B9FFDD] p-2 ml-2 rounded-full"
                               : "text-gray-500 bg-[#FAF691] p-2 ml-2 rounded-full"
@@ -626,7 +648,7 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col h-[350px] w-[600px]  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2">
+              <div className="flex flex-col h-[400px] flex-1  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -692,7 +714,7 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
             </div>
 
             <div className="flex flex-1 justify-center items-center">
-              <div className="flex flex-col h-[200px] w-[600px]  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2 relative">
+              <div className="flex flex-col h-[200px] flex-1  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -717,13 +739,13 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
                   <div className="flex text-center grid-cols-2 gap-3 justify-center">
                     <div className="border-r-2">
                       <p className="text-4xl font-bold text-green-500">
-                        {data?.two_wheeler[0]?.count || 0}
+                        {two_wheeler}
                       </p>
                       <p className="w-40">Total No. of Vehicle Count</p>
                     </div>
                     <div>
                       <p className="text-4xl font-bold text-green-500">
-                        {data?.two_wheeler[0]?.sum || 0} /-
+                        {two_wheeler_price} /-
                       </p>
                       <p className="w-40">Total Amount of Vehicle Collection</p>
                     </div>
@@ -734,7 +756,7 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
                 </div>
               </div>
 
-              <div className="flex flex-col h-[200px] w-[600px]  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2 relative">
+              <div className="flex flex-col h-[200px] flex-1  justify-start items-center border-2 shadow-xl rounded-md bg-white m-2 relative">
                 <div className="flex flex-row w-full h-[50px] justify-between">
                   <div className="flex flex-1 items-center mt-6 ml-5 flex-row gap-1">
                     <div className="flex h-fit w-fit p-2 bg-[#665DD9] rounded-md">
@@ -759,13 +781,13 @@ const handleSearchArea = async(locationID,fromDate,toDate) => {
                   <div className="flex text-center grid-cols-2 gap-3 justify-center">
                     <div className="border-r-2">
                       <p className="text-4xl font-bold text-green-500">
-                        {data?.four_wheeler[0]?.count || 0}{" "}
+                        {four_wheeler}{" "}
                       </p>
                       <p className="w-40">Total No. of Vehicle Count</p>
                     </div>
                     <div>
                       <p className="text-4xl font-bold text-green-500">
-                        {data?.four_wheeler[0]?.sum || 0} /-
+                        {four_wheeler_price} /-
                       </p>
                       <p className="w-40">Total Amount of Vehicle Collection</p>
                     </div>

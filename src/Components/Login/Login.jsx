@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import { login } from "../../redux/slice/slice";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 import { Container, Box, Button } from "@mui/material";
 import PasswordInput from "./PasswordInput"; // Import the PasswordInput component
 import createApiInstance from "../../AxiosInstance";
 
 const Login = () => {
-  const dispatch = useDispatch();
   const [errorMsg, setErrorMsg] = useState();
   const [deviceType, setDeviceType] = useState(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const Authapi = createApiInstance("auth");
 
@@ -35,18 +29,7 @@ const Login = () => {
 
   const handleLogin = async (values) => {
     try {
-      setLoading(true);
-      /* const res = await axios({
-        url: `${process.env.REACT_APP_AUTH_URL}/login`,
-        method: "POST",
-        data: {
-          email: values.user_id,
-          password: values.password,
-          type: window.ReactNativeWebView ? "mobile" : null,
-          //type: deviceType,
-        },
-      }); */
-
+      setLoading(true); 
       const res = await Authapi.post("/login", {
         email: values.user_id,
         password: values.password,
