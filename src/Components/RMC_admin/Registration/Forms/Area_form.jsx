@@ -482,7 +482,7 @@ export default function Area_form() {
                     className="mb-2 ml-4"
                     htmlFor="agreement_doc_selected_file"
                   >
-                    Agreement Doc
+                    Agreement Image
                     <span className="text-red-500">*</span>
                   </label>
                   <input

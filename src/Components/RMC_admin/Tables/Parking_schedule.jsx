@@ -99,11 +99,12 @@ export default function ParkingSchedule() {
   const [totalItems, setTotalItems] = useState(0);
   const [filteredData, setFilteredData] = useState([]);
   const [erroropen, set_erroropen] = useState(false);
-
+  
   const [delete_id, set_delete_id] = useState("");
   const token = localStorage.getItem("token");
   const [deleteLoading, set_deleteLoading] = useState(false);
-
+  const [loading, set_loading] = useState(false);
+  
   const errorhandleClickOpen = (id) => {
     set_delete_id(id);
     set_erroropen(true);
@@ -114,20 +115,21 @@ export default function ParkingSchedule() {
   };
 
   const handleSearchChange = (e) => {
-    const query = e.target.value.toLowerCase();
+    set_loading(true);
+    const query = e.target.value.toLowerCase().replace(/\s/g, "");
     const filtered = data.filter((item) => {
-      return (
-        item.address.toLowerCase().includes(query) ||
-        item.first_name.toLowerCase().includes(query) ||
-        item.middle_name.toLowerCase().includes(query) ||
-        item.last_name.toLowerCase().includes(query) ||
-        item.incharge_id.toLowerCase().includes(query)
-      );
+      const itemValues =
+        `${item.address}${item.first_name}${item.middle_name}${item.last_name}${item.incharge_id}`
+          .toLowerCase()
+          .replace(/\s/g, "");
+      return itemValues.includes(query);
     });
+    set_loading(false)
+    setFilteredData(filtered);
     setTotalItems(filtered.length);
-    setData(filtered);
-    setSearchQuery(query);
+    setSearchQuery(e.target.value);
   };
+
   const formatDate = (isoDateString) => {
     const date = new Date(isoDateString);
 
@@ -147,6 +149,7 @@ export default function ParkingSchedule() {
     return timeStr; // Return the original string if it doesn't match the expected length
   }
   const dataFetch = async (newPage, newRowsPerPage) => {
+    set_loading(true)
     try {
       const response = await axios.get(
         `${
@@ -164,13 +167,17 @@ export default function ParkingSchedule() {
       setTotalItems(response.data?.data?.totalItems);
 
       if (Array.isArray(response.data.data.data)) {
+        set_loading(false)
         setData(response.data.data.data); // Ensure the response contains a 'data' field with an array of items
+        setFilteredData(response.data.data.data);
+
       } else {
         console.error(
           "API response data is not an array",
           response.data.data.data
         );
-        setData([]); // Default to an empty array if the data is not an array
+        setData([]);
+        set_loading(false)// Default to an empty array if the data is not an array
       }
 
       setTotalItems(response.data?.data?.totalItems); // Ensure the response contains a 'totalItems' field with the total count
@@ -291,55 +298,68 @@ export default function ParkingSchedule() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.first_name}</TableCell>
-                  <TableCell>{row.incharge_id}</TableCell>
-                  <TableCell>{formatDate(row.from_date)}</TableCell>
-                  <TableCell>{formatDate(row.to_date)}</TableCell>
-                  <TableCell>{formatTime(row.from_time)}</TableCell>
-                  <TableCell>{row.to_time}</TableCell>
-                  <TableCell>{formatDate(row.created_at)}</TableCell>
-
-                  {/* <TableCell>
-                    <div
-                      className={`flex p-2 
-                             bg-[#FAF691] text-[#989200]
-                         rounded-md shadow-md justify-center items-center`}
-                    >
-                      Organised
-                    </div>
-                  </TableCell> */}
-                  <TableCell>
-                    <div>
-                      <div className="flex flex-row gap-4">
-                        {/*Delete */}
-                        <div
-                          onClick={() => {
-                            errorhandleClickOpen(row.id);
-                          }}
-                          className="flex cursor-pointer"
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 18 18"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M6.95455 3H11.0455C11.0455 2.50272 10.83 2.02581 10.4464 1.67417C10.0628 1.32254 9.54249 1.125 9 1.125C8.45751 1.125 7.93724 1.32254 7.55365 1.67417C7.17005 2.02581 6.95455 2.50272 6.95455 3ZM5.72727 3C5.72727 2.20435 6.07208 1.44129 6.68583 0.87868C7.29959 0.316071 8.13202 0 9 0C9.86798 0 10.7004 0.316071 11.3142 0.87868C11.9279 1.44129 12.2727 2.20435 12.2727 3H17.3864C17.5491 3 17.7052 3.05926 17.8203 3.16475C17.9354 3.27024 18 3.41332 18 3.5625C18 3.71168 17.9354 3.85476 17.8203 3.96025C17.7052 4.06574 17.5491 4.125 17.3864 4.125H16.3145L15.3188 15.0773C15.2464 15.874 14.8499 16.6167 14.2081 17.1581C13.5663 17.6994 12.726 17.9999 11.8538 18H6.14618C5.27399 17.9999 4.43368 17.6994 3.79187 17.1581C3.15006 16.6167 2.75362 15.874 2.68118 15.0773L1.68545 4.125H0.613636C0.45089 4.125 0.294809 4.06574 0.17973 3.96025C0.0646507 3.85476 0 3.71168 0 3.5625C0 3.41332 0.0646507 3.27024 0.17973 3.16475C0.294809 3.05926 0.45089 3 0.613636 3H5.72727ZM3.90436 14.9835C3.95115 15.4991 4.2076 15.9797 4.62285 16.33C5.03809 16.6804 5.58181 16.8749 6.14618 16.875H11.8538C12.4182 16.8749 12.9619 16.6804 13.3772 16.33C13.7924 15.9797 14.0488 15.4991 14.0956 14.9835L15.084 4.125H2.91682L3.90436 14.9835ZM7.15909 6.75C7.32184 6.75 7.47792 6.80926 7.593 6.91475C7.70808 7.02024 7.77273 7.16332 7.77273 7.3125V13.6875C7.77273 13.8367 7.70808 13.9798 7.593 14.0852C7.47792 14.1907 7.32184 14.25 7.15909 14.25C6.99634 14.25 6.84026 14.1907 6.72518 14.0852C6.61011 13.9798 6.54545 13.8367 6.54545 13.6875V7.3125C6.54545 7.16332 6.61011 7.02024 6.72518 6.91475C6.84026 6.80926 6.99634 6.75 7.15909 6.75ZM11.4545 7.3125C11.4545 7.16332 11.3899 7.02024 11.2748 6.91475C11.1597 6.80926 11.0037 6.75 10.8409 6.75C10.6782 6.75 10.5221 6.80926 10.407 6.91475C10.2919 7.02024 10.2273 7.16332 10.2273 7.3125V13.6875C10.2273 13.8367 10.2919 13.9798 10.407 14.0852C10.5221 14.1907 10.6782 14.25 10.8409 14.25C11.0037 14.25 11.1597 14.1907 11.2748 14.0852C11.3899 13.9798 11.4545 13.8367 11.4545 13.6875V7.3125Z"
-                              fill="#333333"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={thead.length}
+                    align="center"
+                    style={{ padding: "20px", fontSize: "18px" }}
+                  >
+                    Loading...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredData.length > 0 ? (
+                filteredData?.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.address}</TableCell>
+                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.first_name}</TableCell>
+                    <TableCell>{row.incharge_id}</TableCell>
+                    <TableCell>{formatDate(row.from_date)}</TableCell>
+                    <TableCell>{formatDate(row.to_date)}</TableCell>
+                    <TableCell>{formatTime(row.from_time)}</TableCell>
+                    <TableCell>{row.to_time}</TableCell>
+                    <TableCell>{formatDate(row.created_at)}</TableCell>
+
+                    <TableCell>
+                      <div>
+                        <div className="flex flex-row gap-4">
+                          {/*Delete */}
+                          <div
+                            onClick={() => {
+                              errorhandleClickOpen(row.id);
+                            }}
+                            className="flex cursor-pointer"
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 18 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M6.95455 3H11.0455C11.0455 2.50272 10.83 2.02581 10.4464 1.67417C10.0628 1.32254 9.54249 1.125 9 1.125C8.45751 1.125 7.93724 1.32254 7.55365 1.67417C7.17005 2.02581 6.95455 2.50272 6.95455 3ZM5.72727 3C5.72727 2.20435 6.07208 1.44129 6.68583 0.87868C7.29959 0.316071 8.13202 0 9 0C9.86798 0 10.7004 0.316071 11.3142 0.87868C11.9279 1.44129 12.2727 2.20435 12.2727 3H17.3864C17.5491 3 17.7052 3.05926 17.8203 3.16475C17.9354 3.27024 18 3.41332 18 3.5625C18 3.71168 17.9354 3.85476 17.8203 3.96025C17.7052 4.06574 17.5491 4.125 17.3864 4.125H16.3145L15.3188 15.0773C15.2464 15.874 14.8499 16.6167 14.2081 17.1581C13.5663 17.6994 12.726 17.9999 11.8538 18H6.14618C5.27399 17.9999 4.43368 17.6994 3.79187 17.1581C3.15006 16.6167 2.75362 15.874 2.68118 15.0773L1.68545 4.125H0.613636C0.45089 4.125 0.294809 4.06574 0.17973 3.96025C0.0646507 3.85476 0 3.71168 0 3.5625C0 3.41332 0.0646507 3.27024 0.17973 3.16475C0.294809 3.05926 0.45089 3 0.613636 3H5.72727ZM3.90436 14.9835C3.95115 15.4991 4.2076 15.9797 4.62285 16.33C5.03809 16.6804 5.58181 16.8749 6.14618 16.875H11.8538C12.4182 16.8749 12.9619 16.6804 13.3772 16.33C13.7924 15.9797 14.0488 15.4991 14.0956 14.9835L15.084 4.125H2.91682L3.90436 14.9835ZM7.15909 6.75C7.32184 6.75 7.47792 6.80926 7.593 6.91475C7.70808 7.02024 7.77273 7.16332 7.77273 7.3125V13.6875C7.77273 13.8367 7.70808 13.9798 7.593 14.0852C7.47792 14.1907 7.32184 14.25 7.15909 14.25C6.99634 14.25 6.84026 14.1907 6.72518 14.0852C6.61011 13.9798 6.54545 13.8367 6.54545 13.6875V7.3125C6.54545 7.16332 6.61011 7.02024 6.72518 6.91475C6.84026 6.80926 6.99634 6.75 7.15909 6.75ZM11.4545 7.3125C11.4545 7.16332 11.3899 7.02024 11.2748 6.91475C11.1597 6.80926 11.0037 6.75 10.8409 6.75C10.6782 6.75 10.5221 6.80926 10.407 6.91475C10.2919 7.02024 10.2273 7.16332 10.2273 7.3125V13.6875C10.2273 13.8367 10.2919 13.9798 10.407 14.0852C10.5221 14.1907 10.6782 14.25 10.8409 14.25C11.0037 14.25 11.1597 14.1907 11.2748 14.0852C11.3899 13.9798 11.4545 13.8367 11.4545 13.6875V7.3125Z"
+                                fill="#333333"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={thead.length}
+                    align="center"
+                    style={{ padding: "20px", fontSize: "18px" }}
+                  >
+                    No Data Found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

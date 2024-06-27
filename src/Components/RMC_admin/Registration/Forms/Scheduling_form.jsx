@@ -57,8 +57,6 @@ export default function Scheduling_form() {
   console.log("Selected Incharge >> ", selected_incharge);
   const [erroropen, set_erroropen] = useState(false);
 
-
-
   const errorhandleClickOpen = () => {
     set_erroropen(true);
   };
@@ -203,7 +201,7 @@ export default function Scheduling_form() {
         onSubmit={onSubmit}
       >
         {({ values, setFieldValue, handleChange, resetForm }) => (
-          <Form className="flex flex-col flex-1 gap-4">
+          <Form className="flex flex-col flex-1 gap-2">
             <div className="flex flex-1 flex-row gap-4 ">
               <div className="flex flex-1 flex-col ">
                 <div className="flex flex-1 flex-col mt-4">
@@ -215,7 +213,7 @@ export default function Scheduling_form() {
                     as="select"
                     id="location_id"
                     name="location_id"
-                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                    className="border border-gray-300 rounded-md px-3 py-4 mt-1"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")
@@ -252,14 +250,14 @@ export default function Scheduling_form() {
                   <div>
                     {zip_code !== "" ? (
                       <div
-                        className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                        className="border border-gray-300 rounded-md px-3 py-4 mt-1  "
                         style={{ boxShadow: "0 1px 4px #fff" }}
                       >
                         {zip_code}
                       </div>
                     ) : (
                       <div
-                        className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                        className="border border-gray-300 rounded-md px-3 py-4 mt-1"
                         style={{ boxShadow: "0 1px 4px #fff" }}
                       >
                         Select Location
@@ -277,8 +275,9 @@ export default function Scheduling_form() {
                     as="input"
                     type="date"
                     id="from_date"
+                    min={new Date().toISOString().split("T")[0]} 
                     name="from_date"
-                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                    className="border border-gray-300 rounded-md px-3 py-4 mt-1"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")
@@ -303,7 +302,8 @@ export default function Scheduling_form() {
                     type="date"
                     id="to_date"
                     name="to_date"
-                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                    min={new Date().toISOString().split("T")[0]} 
+                    className="border border-gray-300 rounded-md px-3 py-4 mt-1"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")
@@ -328,7 +328,7 @@ export default function Scheduling_form() {
                     as="select"
                     id="incharge_id"
                     name="incharge_id"
-                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[30vw]"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")
@@ -378,7 +378,7 @@ export default function Scheduling_form() {
                     id="from_time"
                     name="from_time"
                     // format="HH:mm"
-                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[30vw]"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")
@@ -411,7 +411,7 @@ export default function Scheduling_form() {
                     id="to_time"
                     name="to_time"
                     // format="HH:mm"
-                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[80vw] md:w-auto"
+                    className="border border-gray-300 rounded-md px-3 py-4 mt-1 w-[30vw]"
                     style={{ boxShadow: "0 1px 4px #fff" }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow = "0 1px 4px #000")

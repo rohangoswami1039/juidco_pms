@@ -340,7 +340,7 @@ export default function RMC_Dashboard() {
         <div className="flex flex-col flex-1 bg-[#F9FAFC]">
           <div className="flex h-10 justify-between items-center mt-5 p-5">
             <div className="flex ml-4 ">
-              <div
+              {/* <div
                 onClick={() => {
                   navigate(-1);
                 }}
@@ -372,9 +372,9 @@ export default function RMC_Dashboard() {
                 </svg>
                 <div className="ml-2 mt-1 text-[#665DD9]  text-sm text-center">
                   {" "}
-                  Back
+                  Back  
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="flex text-xl font-semibold  mr-4">
               Parking Report

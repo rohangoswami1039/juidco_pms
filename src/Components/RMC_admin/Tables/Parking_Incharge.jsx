@@ -26,18 +26,10 @@ import { jsPDF } from "jspdf";
 
 const handleDownload = () => {
   const doc = new jsPDF();
-
-  const columns = [
-    { header: "S.N" },
-    { header: "Full Name" },
-    { header: "Email" },
-    { header: "Location" },
-    { header: "Unique ID" },
-  ];
+  const columns = ["S.N", "Full Name", "Email", "Location", "Unique ID"];
 
   const data = [];
   const table = document.getElementById("data-table");
-  console.log(table);
   const rows = table?.querySelectorAll("tbody tr") || [];
   rows.forEach((row) => {
     const rowData = [];
@@ -49,7 +41,7 @@ const handleDownload = () => {
   });
 
   autoTable(doc, {
-    head: [columns.map((column) => column.header)],
+    head: [columns],
     body: data,
   });
 
@@ -61,22 +53,34 @@ export default function Parking_Incharge() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const BaseApi = createApiInstance("Base");
-  const [incharges, set_incharges] = useState([]);
+  const [incharges, setIncharges] = useState([]);
   const [filteredIncharges, setFilteredIncharges] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const token = localStorage.getItem("token");
 
-  const [erroropen, set_erroropen] = useState(false);
-  const [delete_id, set_delete_id] = useState("");
-  const [loadingdelete, set_loadingdelete] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState("");
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [loading, set_loading] = useState(false);
 
-  const errorhandleClickOpen = (id) => {
-    set_delete_id(id);
-    set_erroropen(true);
+  const thead = [
+    { name: "S.N" },
+    { name: "Full Name" },
+    { name: "Email" },
+    { name: "Location" },
+    { name: "Unique ID" },
+    { name: "Fitness Doc" },
+    { name: "KYC Doc" },
+    { name: "Actions" },
+  ];
+
+  const handleClickOpen = (id) => {
+    setDeleteId(id);
+    setErrorOpen(true);
   };
 
-  const errorhandleClose = () => {
-    set_erroropen(false);
+  const handleClose = () => {
+    setErrorOpen(false);
   };
 
   const getImage = async (referenceNumber) => {
@@ -94,7 +98,8 @@ export default function Parking_Incharge() {
     return url;
   };
 
-  const dataFetch = (newPage, newRowsPerPage) => {
+  const fetchData = (newPage, newRowsPerPage) => {
+    set_loading(true);
     BaseApi.get(
       `/get-parking-incharge?limit=${newRowsPerPage}&page=${newPage + 1}`
     )
@@ -111,7 +116,8 @@ export default function Parking_Incharge() {
           });
 
           Promise.all(promises).then((inchargesWithImages) => {
-            set_incharges(inchargesWithImages);
+            set_loading(false);
+            setIncharges(inchargesWithImages);
             setFilteredIncharges(inchargesWithImages);
             setPage(response.data.data.page - 1);
             setTotalItems(response.data.data.totalItems);
@@ -119,65 +125,63 @@ export default function Parking_Incharge() {
         }
       })
       .catch((error) => {
+        set_loading(false);
         console.error(error);
       });
   };
 
   useEffect(() => {
-    dataFetch(page, rowsPerPage);
+    fetchData(page, rowsPerPage);
   }, [page, rowsPerPage]);
 
   useEffect(() => {
+    const normalizeString = (str) => str.toLowerCase().replace(/\s+/g, "");
+    const normalizedSearchQuery = normalizeString(searchQuery);
+
     const filtered = incharges.filter((incharge) => {
+      const fullName = `${incharge.first_name || ""} ${
+        incharge.middle_name || ""
+      } ${incharge.last_name || ""}`;
       return (
-        (incharge.first_name &&
-          incharge.first_name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())) ||
-        (incharge.middle_name &&
-          incharge.middle_name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())) ||
-        (incharge.last_name &&
-          incharge.last_name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())) ||
-        (incharge.email_id &&
-          incharge.email_id
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())) ||
-        (incharge.address &&
-          incharge.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (incharge.cunique_id &&
-          incharge.cunique_id.toLowerCase().includes(searchQuery.toLowerCase()))
+        normalizeString(fullName).includes(normalizedSearchQuery) ||
+        normalizeString(incharge.email_id || "").includes(
+          normalizedSearchQuery
+        ) ||
+        normalizeString(incharge.address || "").includes(
+          normalizedSearchQuery
+        ) ||
+        normalizeString(incharge.cunique_id || "").includes(
+          normalizedSearchQuery
+        )
       );
     });
     setFilteredIncharges(filtered);
   }, [searchQuery, incharges]);
 
-  const deletehandle = () => {
-    set_loadingdelete(true);
+  const handleDelete = () => {
+    setLoadingDelete(true);
     axios
       .post(
         `${process.env.REACT_APP_BASE_URL}/delete-parking-incharge`,
-        { id: delete_id },
+        { id: deleteId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       )
-      .then((e) => {
-        if (e.data.data.id === delete_id) {
-          dataFetch(page, rowsPerPage);
-          errorhandleClose();
-          set_loadingdelete(false);
+      .then((response) => {
+        if (response.data.data.id === deleteId) {
+          fetchData(page, rowsPerPage);
+          handleClose();
+          setLoadingDelete(false);
         } else {
           toast.error("Something went wrong");
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error) => {
+        console.log(error);
+        toast.error("Failed to delete");
       });
   };
 
@@ -187,14 +191,14 @@ export default function Parking_Incharge() {
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
-    dataFetch(newPage, rowsPerPage);
+    fetchData(newPage, rowsPerPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setRowsPerPage(newRowsPerPage);
     setPage(0); // Reset page to 0 when changing rowsPerPage
-    dataFetch(0, newRowsPerPage);
+    fetchData(0, newRowsPerPage);
   };
 
   return (
@@ -260,55 +264,80 @@ export default function Parking_Incharge() {
           <Table id="data-table" stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
-                <TableCell>S.N</TableCell>
-                <TableCell>Full Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Unique ID</TableCell>
-                <TableCell>Fitness Doc</TableCell>
-                <TableCell>KYC Doc</TableCell>
-                <TableCell>Actions</TableCell>
+                {thead.map((item, index) => (
+                  <TableCell key={index}>{item.name}</TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredIncharges.map((incharge, index) => (
-                <TableRow key={incharge.id}>
-                  <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-                  <TableCell>
-                    {`${incharge.first_name || ""} ${
-                      incharge.middle_name || ""
-                    } ${incharge.last_name || ""}`}
-                  </TableCell>
-                  <TableCell>{incharge.email_id}</TableCell>
-                  <TableCell>{incharge.address}</TableCell>
-                  <TableCell>{incharge.cunique_id}</TableCell>
-                  <TableCell>
-                    {incharge.fitnessDocUrl ? (
-                      <img className="w-20 h-20" src={incharge.fitnessDocUrl} />
-                    ) : (
-                      <div className="text-red-500 p-2 text-xs bg-red-200 w-fit font-bold rounded-md">
-                        Not Uploaded
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {incharge.kycDocUrl ? (
-                      <img className="w-20 h-20" src={incharge.kycDocUrl} />
-                    ) : (
-                      <div className="text-red-500 text-xs p-2 bg-red-200 w-fit font-bold rounded-md">
-                        Not Uploaded
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-1 flex-row">
-                      <Button onClick={() => errorhandleClickOpen(incharge.id)}>
-                        Delete
-                      </Button>
-                    </div>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={thead.length}
+                    align="center"
+                    style={{ padding: "20px", fontSize: "18px" }}
+                  >
+                    Loading...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredIncharges.length > 0 ? (
+                filteredIncharges.map((incharge, index) => (
+                  <TableRow key={incharge.id}>
+                    <TableCell>{page * rowsPerPage + index + 1}</TableCell>
+                    <TableCell>
+                      {`${incharge.first_name || ""} ${
+                        incharge.middle_name || ""
+                      } ${incharge.last_name || ""}`}
+                    </TableCell>
+                    <TableCell>{incharge.email_id}</TableCell>
+                    <TableCell>{incharge.address}</TableCell>
+                    <TableCell>{incharge.cunique_id}</TableCell>
+                    <TableCell>
+                      {incharge.fitnessDocUrl ? (
+                        <img
+                          className="w-20 h-20"
+                          src={incharge.fitnessDocUrl}
+                          alt="Fitness Doc"
+                        />
+                      ) : (
+                        <div className="text-red-500 p-2 text-xs bg-red-200 w-fit font-bold rounded-md">
+                          Not Uploaded
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {incharge.kycDocUrl ? (
+                        <img
+                          className="w-20 h-20"
+                          src={incharge.kycDocUrl}
+                          alt="KYC Doc"
+                        />
+                      ) : (
+                        <div className="text-red-500 text-xs p-2 bg-red-200 w-fit font-bold rounded-md">
+                          Not Uploaded
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-1 flex-row">
+                        <Button onClick={() => handleClickOpen(incharge.id)}>
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={thead.length}
+                    align="center"
+                    style={{ padding: "20px", fontSize: "18px" }}
+                  >
+                    No Data Found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -323,8 +352,8 @@ export default function Parking_Incharge() {
       </Paper>
 
       <Dialog
-        open={erroropen}
-        onClose={errorhandleClose}
+        open={errorOpen}
+        onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
@@ -335,9 +364,9 @@ export default function Parking_Incharge() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={errorhandleClose}>Cancel</Button>
-          <Button onClick={deletehandle} autoFocus>
-            {loadingdelete ? "Deleting..." : "Delete"}
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleDelete} autoFocus>
+            {loadingDelete ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
