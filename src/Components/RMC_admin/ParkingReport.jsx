@@ -62,6 +62,7 @@ export default function ParkingReport() {
   const [selectedOption, setSelectedOption] = useState("");
 
   const [selected_incharge, set_selected_incharge] = useState();
+  console.log("selected Incharge",selected_incharge)
 
   const fetchIncharge = async () => {
     try {
@@ -83,10 +84,10 @@ export default function ParkingReport() {
   console.log(incharge);
   console.log(location);
 
-  useEffect(() => {
+/*   useEffect(() => {
     fetchData();
   }, [locationId]);
-
+ */
   useEffect(() => {
     fetchLocation();
     fetchIncharge();
@@ -108,6 +109,98 @@ export default function ParkingReport() {
   useEffect(() => {
     SetTotal_Vechicle();
   }, [locationId, data]);
+
+ useEffect(()=>{
+  setData()
+ },[selectedOption])
+
+
+  function getPastDate(years) {
+    const pastDate = new Date();
+    pastDate.setFullYear(pastDate.getFullYear() - years);
+  
+    const year = pastDate.getFullYear();
+    let month = pastDate.getMonth() + 1;
+    if (month < 10) {
+      month = `0${month}`;
+    }
+    let day = pastDate.getDate();
+    if (day < 10) {
+      day = `0${day}`;
+    }
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Function to get future date in YYYY-MM-DD format, given number of years
+  function getFutureDate(years) {
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + years);
+  
+    const year = futureDate.getFullYear();
+    let month = futureDate.getMonth() + 1;
+    if (month < 10) {
+      month = `0${month}`;
+    }
+    let day = futureDate.getDate();
+    if (day < 10) {
+      day = `0${day}`;
+    }
+    return `${year}-${month}-${day}`;
+  }
+
+const handleSubmit = (values) =>{
+  console.log("Form Data",values)
+  if(values.selection === "areaId"){
+      handleSearchArea(values.location,values.fromDate,values.toDate)
+  }else if(values.selection === 'inChargeId' ){
+    handleSearchIncharge(values.inChargeId,values.fromDate,values.toDate)
+  }
+
+}
+
+
+const handleSearchIncharge = async (incharge,fromDate,toDate) =>{
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_BASE_URL}/report/collection`,
+      {
+        incharge_id: incharge ,
+        from_date:fromDate,
+        to_date:toDate
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setData(response?.data?.data);
+  } catch (error) {
+    console.error("There was an error onboarding the parking area!", error);
+  }
+  
+}
+const handleSearchArea = async(locationID,fromDate,toDate) => {
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_BASE_URL}/report/collection`,
+      {
+        area_id: locationID ,
+        from_date:fromDate,
+        to_date:toDate
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setData(response?.data?.data);
+  } catch (error) {
+    console.error("There was an error onboarding the parking area!", error);
+  }
+}
+
 
   return (
     <>
@@ -177,13 +270,16 @@ export default function ParkingReport() {
                       areaId: "",
                       fromDate: "",
                       toDate: "",
+                      selection:""
                     }}
-                    onSubmit={(values) => {
+                    onSubmit={(values,reset) => {
                       console.log(values);
+                      handleSubmit(values)
                     }}
                   >
-                    {({ values, handleChange }) => (
+                    {({ values, handleChange ,setFieldValue}) => (
                       <Form className="w-full flex flex-1 flex-row">
+                        <div className="flex flex-1 flex-col"> 
                         <div className="flex flex-row">
                           <div className="flex  mr-2">
                             <label>
@@ -191,10 +287,13 @@ export default function ParkingReport() {
                                 type="radio"
                                 name="selection"
                                 value="areaId"
+                                className="ml-2 mr-2 cursor-pointer"
                                 checked={selectedOption === "areaId"}
-                                onChange={() => setSelectedOption("areaId")}
+                                onChange={() => {
+                                  setFieldValue('selection',"areaId")
+                                  setSelectedOption("areaId")}}
                               />
-                              Area ID
+                              By Location 
                             </label>
                           </div>
                           <div className="flex  mr-2">
@@ -203,10 +302,13 @@ export default function ParkingReport() {
                                 type="radio"
                                 name="selection"
                                 value="inChargeId"
+                                className="ml-2 mr-2 cursor-pointer"
                                 checked={selectedOption === "inChargeId"}
-                                onChange={() => setSelectedOption("inChargeId")}
+                                onChange={() => {
+                                  setFieldValue('selection',"inChargeId")
+                                  setSelectedOption("inChargeId")}}
                               />
-                              InCharge ID
+                              By InCharge 
                             </label>
                           </div>
                         </div>
@@ -217,9 +319,11 @@ export default function ParkingReport() {
                               <Field
                                 as="select"
                                 name="location"
-                                className="border-2 rounded p-2"
+                                className="border-2 rounded p-2 m-4"
                                 value={locationId}
-                                onChange={(e) => setLocationID(e.target.value)}
+                                onChange={(e) => {
+                                  setFieldValue('location',e.target.value)
+                                  setLocationID(e.target.value)}}
                               >
                                 <option value={null}>Select Location</option>
                                 {location?.data?.map((loc) => (
@@ -229,7 +333,7 @@ export default function ParkingReport() {
                                 ))}
                               </Field>
                             </div>
-                            <div className="flex flex-1">
+                            <div className="flex flex-1 flex-col ml-2 mr-2 mb-4 ">
                               <label>From Date:</label>
                               <Field
                                 type="date"
@@ -237,9 +341,23 @@ export default function ParkingReport() {
                                 className="border-2 rounded p-2 w-full"
                                 value={values.fromDate}
                                 onChange={handleChange}
+                                min={getPastDate(10)} 
+                                max={getFutureDate(40)}  
+
+                                onKeyPress={(e) => {
+                                  if (
+                                    (
+                                      (e.key >= "a" && e.key <= "z") ||
+                                      (e.key >= "A" && e.key <= "Z") ||
+                                      (e.key >= "0" && e.key <= "9")
+                                    )
+                                  ) {
+                                    e.preventDefault();
+                                  }
+                                }}
                               ></Field>
                             </div>
-                            <div className="flex flex-1">
+                            <div className="flex flex-1 flex-col ml-2 mr-2 mb-4">
                               <label>To Date:</label>
                               <Field
                                 type="date"
@@ -247,8 +365,35 @@ export default function ParkingReport() {
                                 className="border-2 rounded p-2 w-full"
                                 value={values.toDate}
                                 onChange={handleChange}
+                                min={getPastDate(10)} 
+                                max={getFutureDate(40)} 
+                                onKeyPress={(e) => {
+                                  if (
+                                    (
+                                      (e.key >= "a" && e.key <= "z") ||
+                                      (e.key >= "A" && e.key <= "Z") ||
+                                      (e.key >= "0" && e.key <= "9")
+                                    )
+                                  ) {
+                                    e.preventDefault();
+                                  }
+                                }}
                               ></Field>
                             </div>
+                            <button type="submit"  className="flex p-4 ml-2 mr-2 mb-4 mt-4 shadow-md rounded-md bg-[#665DD9] text-white font-bold flex-1 justify-center items-center">
+                            <svg className="ml-2 mr-2" fill="white " height="20px" width="20px" version="1.1" id="Capa_1" 
+                                  viewBox="0 0 488.4 488.4" >
+                                <g>
+                                  <g>
+                                    <path d="M0,203.25c0,112.1,91.2,203.2,203.2,203.2c51.6,0,98.8-19.4,134.7-51.2l129.5,129.5c2.4,2.4,5.5,3.6,8.7,3.6
+                                      s6.3-1.2,8.7-3.6c4.8-4.8,4.8-12.5,0-17.3l-129.6-129.5c31.8-35.9,51.2-83,51.2-134.7c0-112.1-91.2-203.2-203.2-203.2
+                                      S0,91.15,0,203.25z M381.9,203.25c0,98.5-80.2,178.7-178.7,178.7s-178.7-80.2-178.7-178.7s80.2-178.7,178.7-178.7
+                                      S381.9,104.65,381.9,203.25z"/>
+                                  </g>
+                                </g>
+                                </svg>
+                              Search 
+                            </button>
                           </div>
                         )}
 
@@ -258,8 +403,11 @@ export default function ParkingReport() {
                               name="inChargeId"
                               as="select"
                               value={selected_incharge}
+                              onChange= {(e)=>{
+                                setFieldValue('inChargeId',e.target.value)
+                                set_selected_incharge(e.target.value)}}
                               placeholder="InCharge ID"
-                              className="border-2 rounded p-2"
+                              className="border-2 rounded p-2 m-4"
                             >
                               <option value="" label="Select Incharge" />
                               {incharge?.map((item) => (
@@ -277,17 +425,30 @@ export default function ParkingReport() {
                                 </option>
                               ))}
                             </Field>
-                            <div className="flex  flex-1">
+                            <div className="flex flex-col flex-1 ml-2 mr-2 mb-4">
                               <label>From Date:</label>
                               <input
                                 type="date"
                                 name="fromDate"
                                 className="border-2 rounded p-2 w-full"
                                 value={values.fromDate}
+                                min={getPastDate(10)} 
+                                max={getFutureDate(40)}  
                                 onChange={handleChange}
+                                onKeyPress={(e) => {
+                                  if (
+                                    (
+                                      (e.key >= "a" && e.key <= "z") ||
+                                      (e.key >= "A" && e.key <= "Z") ||
+                                      (e.key >= "0" && e.key <= "9")
+                                    )
+                                  ) {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                             </div>
-                            <div className="flex flex-1">
+                            <div className="flex flex-1 flex-col ml-2 mr-2 mb-4">
                               <label>To Date:</label>
                               <input
                                 type="date"
@@ -295,13 +456,39 @@ export default function ParkingReport() {
                                 className="border-2 rounded p-2 w-full"
                                 value={values.toDate}
                                 onChange={handleChange}
+                                min={getPastDate(10)} 
+                                max={getFutureDate(40)}  
+                                onKeyPress={(e) => {
+                                  if (
+                                    (
+                                      (e.key >= "a" && e.key <= "z") ||
+                                      (e.key >= "A" && e.key <= "Z") ||
+                                      (e.key >= "0" && e.key <= "9") 
+                                    )
+                                  ) {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                             </div>
+                            <button type="submit" className="flex p-4 ml-2 mr-2 mb-4 mt-4 shadow-md rounded-md bg-[#665DD9] text-white font-bold flex-1 justify-center items-center">
+                            <svg className="ml-2 mr-2" fill="white " height="20px" width="20px" version="1.1" id="Capa_1" 
+                                  viewBox="0 0 488.4 488.4" >
+                                <g>
+                                  <g>
+                                    <path d="M0,203.25c0,112.1,91.2,203.2,203.2,203.2c51.6,0,98.8-19.4,134.7-51.2l129.5,129.5c2.4,2.4,5.5,3.6,8.7,3.6
+                                      s6.3-1.2,8.7-3.6c4.8-4.8,4.8-12.5,0-17.3l-129.6-129.5c31.8-35.9,51.2-83,51.2-134.7c0-112.1-91.2-203.2-203.2-203.2
+                                      S0,91.15,0,203.25z M381.9,203.25c0,98.5-80.2,178.7-178.7,178.7s-178.7-80.2-178.7-178.7s80.2-178.7,178.7-178.7
+                                      S381.9,104.65,381.9,203.25z"/>
+                                  </g>
+                                </g>
+                                </svg>
+                              Search 
+                            </button>
                           </div>
                         )}
 
-                        <div className="flex p-4 rounded-md bg-red-500 flex-1 justify-center items-center">
-                          <div className="flex">sdas</div>
+                        
                         </div>
                       </Form>
                     )}
