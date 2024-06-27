@@ -19,7 +19,7 @@ export default function Incharge_Dashboard() {
     const confirm = window.confirm("Are you sure want to logout?");
     if (confirm) {
       dispatch(logout());
-      window.location.replace("/parking");
+      window.location.replace("/mobile");
     }
   } 
 
