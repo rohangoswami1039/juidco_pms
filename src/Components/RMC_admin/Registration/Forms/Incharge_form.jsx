@@ -437,6 +437,7 @@ export default function Incharge_form() {
                           <img
                             src={imageURls?.Fitness_Certificate}
                             className="h-[50px] w-[50px]"
+                            alt="Fitness Certificate"
                           />
                         </div>
                       </div>
@@ -489,6 +490,7 @@ export default function Incharge_form() {
                           <img
                             src={imageURls?.KYC_File}
                             className="h-[50px] w-[50px]"
+                            alt="KYC Document"
                           />
                         </div>
                       </div>
