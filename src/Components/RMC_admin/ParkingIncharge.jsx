@@ -76,73 +76,7 @@ export default function ParkingIncharge() {
             </div>
           </div>
 
-          {/* <div className="flex h-[100px] bg-white border-2 shadow-md mt-4 ml-4 mr-4 mb-2">
-            <div className="flex flex-row flex-1 m-1">
-              <div className="flex  justify-center items-center">
-                <img className="h-[60px] w-[60px]" src={parkingStop} />
-              </div>
-              <div className="flex flex-1 flex-col justify-center items-start ml-4">
-                <div className="flex flex-1 font-semibold mb-2 ">
-                  Search Filter
-                </div>
-                <div className="flex flex-1 w-full">
-                  <Formik
-                    initialValues={{ location: "", inChargeId: "", name: "" }}
-                    onSubmit={(values) => {
-                      console.log(values);
-                    }}
-                  >
-                    {() => (
-                      <Form className="w-full">
-                        <div className="flex flex-row">
-                          <div className="flex flex-1 mr-2">
-                            <Field
-                              as="select"
-                              name="location"
-                              className=" border-2 rounded p-2 "
-                              value={locationId}
-                              onChange={(e) => setLocationID(e.target.value)}
-                            >
-                              <option value={null}>Select Location</option>
-                              {location?.data?.map((loc) => (
-                                <option value={loc?.id}>
-                                  {loc?.address} - {loc?.station}
-                                </option>
-                              ))}
-                            </Field>
-                          </div>
-                          <div className="flex flex-1 mr-2">
-                            <Field
-                              type="text"
-                              name="inChargeId"
-                              placeholder="In-Charge ID"
-                              className="w-full border-2 rounded p-2"
-                            />
-                          </div>
-                          <div className="flex flex-1 mr-2">
-                            <Field
-                              type="text"
-                              name="name"
-                              placeholder="Name"
-                              className="w-full border-2 rounded p-2"
-                            />
-                          </div>
-                          <div className="flex flex-1">
-                            <button
-                              type="submit"
-                              className="w-full bg-[#6366F1] shadow-md border-2  text-white p-2 rounded-md"
-                            >
-                              Search Filter
-                            </button>
-                          </div>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
-                </div>
-              </div>
-            </div>
-          </div> */}
+          
 
           <div className="flex flex-1 flex-col border-2 shadow-md rounded-md bg-white m-4">
             <div className="flex flex-1 justify-start items-start m-4">
